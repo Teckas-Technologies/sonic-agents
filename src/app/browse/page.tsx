@@ -1,21 +1,23 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState } from "react";
 import Dashboard from "@/Components/Dashboard/Dashboard";
 import Navbar from "@/Components/Navbar/Navbar";
+import Agents from "@/Components/BrowseAgents/Agents";
 
-export default function Home() {
+const Page = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className="h-screen flex overflow-hidden">
+    <div className="h-screen flex">
       {/* Sidebar Navbar */}
       <Navbar isCollapsed={isCollapsed} />
-
-      {/* Main Dashboard */}
-      <div className="flex-1 h-screen overflow-auto">
-        <Dashboard onToggle={() => setIsCollapsed((prev) => !prev)} />
+      <div className="flex-1 h-full">
+       <Agents onToggle={() => setIsCollapsed((prev) => !prev)}/>
       </div>
     </div>
   );
-}
+};
+
+export default Page;
