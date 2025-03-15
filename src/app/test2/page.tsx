@@ -10,7 +10,7 @@ import { warpCore } from "@/lib/warpcore";
 const solanaMailbox = "E588QtVUvresuXq2KoNEwAmoifCzYGpRBdHByN9KQMbi"; // 🔥 Required for Solana messaging
 const solanaCollateralAddress = "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"; // 🔥 Required for Sealevel hyp tokens
 
-const solanaRpcUrl = "https://solana-mainnet.g.alchemy.com/v2/H-LqusqbIhSz4K9KE8vQ9i8C4PQPGD-K" // "https://api.mainnet-beta.solana.com";
+const solanaRpcUrl = "https://api.mainnet-beta.solana.com"; // "https://solana-mainnet.g.alchemy.com/v2/H-LqusqbIhSz4K9KE8vQ9i8C4PQPGD-K"
 const sonicRpcUrl = "https://sonic.helius-rpc.com";
 
 export default function TestPage2() {
@@ -69,9 +69,16 @@ export default function TestPage2() {
                 if (!originToken) {
                     return;
                 }
+                const chains = warpCore.getTokenChains();
+                console.log("Chains:", chains)
+                const sonicTokens = warpCore.tokens.find(
+                    (token) =>
+                        token.chainName === "sonicsvm",
+                );
+                console.log("Sonic Tokens: ", sonicTokens)
                 const fee = await warpCore.getInterchainTransferFee({
                     originToken,
-                    destination: "solanamainnet",
+                    destination: "sonicsvm",
                     sender: wallets[0].address,
                 }); // 9 decimals
                 console.log("FEE:", fee)
@@ -89,55 +96,7 @@ export default function TestPage2() {
 
         const solanaWallet = wallets[0]; // Phantom wallet from Privy
         const solanaAddress = solanaWallet.address;
-        const recipientEvmAddress = "0xRecipientEvmAddressOnSonic"; // Replace with the correct EVM address
-
         const connection = new Connection(solanaRpcUrl);
-
-        const multiProvider = new MultiProtocolProvider<{ mailbox?: string }>({
-            solana: {
-                name: "solana",
-                chainId: 101,
-                domainId: 101, // Solana domain ID
-                protocol: "sealevel" as 'ethereum' | 'sealevel' | 'cosmos' | any,
-                rpcUrls: [{ http: solanaRpcUrl }],
-                blockExplorers: [
-                    // {
-                    //     name: "Solana Explorer",
-                    //     url: "https://explorer.solana.com",
-                    //     // apiUrl: "https://api.mainnet-beta.solana.com",
-                    // }
-                ],
-                nativeToken: {
-                    name: "Solana",
-                    symbol: "SOL",
-                    decimals: 9,
-                },
-                mailbox: solanaMailbox
-            },
-            sonic: {
-                name: "sonic",
-                chainId: 507150715,
-                domainId: 507150715,
-                protocol: "ethereum" as 'ethereum' | 'sealevel' | 'cosmos' | any,
-                rpcUrls: [{ http: sonicRpcUrl }],
-                blockExplorers: [
-                    {
-                        name: "Sonic Explorer",
-                        url: "https://explorer.sonic.game",
-                        apiUrl: "https://api.sonic-explorer.com",
-                    }
-                ],
-                nativeToken: {
-                    name: "Sonic SVM (SONIC)",
-                    symbol: "SONIC",
-                    decimals: 9,
-                },
-            },
-        });
-
-        // const warpCore = new WarpCore(multiProvider, []);
-
-
 
 
 
@@ -161,30 +120,30 @@ export default function TestPage2() {
 
             console.log("Fee:", fee)
 
-            // const txs: WarpTypedTransaction[] = await warpCore.getTransferRemoteTxs({
-            //     originTokenAmount,
-            //     destination,
-            //     sender,
-            //     recipient,
-            // });
+            const txs: WarpTypedTransaction[] = await warpCore.getTransferRemoteTxs({
+                originTokenAmount,
+                destination,
+                sender,
+                recipient,
+            });
 
-            // console.log("Transactions to Sign:", txs);
+            console.log("Transactions to Sign:", txs);
 
-            // for (const tx of txs) {
-            //     // ✅ Ensure the transaction is a valid Solana transaction before adding it
-            //     if (tx.transaction instanceof TransactionInstruction || tx.transaction instanceof Transaction) {
-            //         const solanaTransaction = new Transaction().add(tx.transaction);
-            //         solanaTransaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-            //         solanaTransaction.feePayer = new PublicKey(solanaAddress);
+            for (const tx of txs) {
+                // ✅ Ensure the transaction is a valid Solana transaction before adding it
+                if (tx.transaction instanceof TransactionInstruction || tx.transaction instanceof Transaction) {
+                    const solanaTransaction = new Transaction().add(tx.transaction);
+                    solanaTransaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+                    solanaTransaction.feePayer = new PublicKey(solanaAddress);
 
-            //         // ✅ Sign & Send Transaction using Phantom Wallet
-            //         const signedTx = await solanaWallet.signTransaction(solanaTransaction);
-            //         const txId = await connection.sendRawTransaction(signedTx.serialize());
-            //         console.log(`Transaction Sent: https://explorer.solana.com/tx/${txId}`);
-            //     } else {
-            //         console.warn("Skipping non-Solana transaction:", tx.transaction);
-            //     }
-            // }
+                    // ✅ Sign & Send Transaction using Phantom Wallet
+                    const signedTx = await solanaWallet.signTransaction(solanaTransaction);
+                    const txId = await connection.sendRawTransaction(signedTx.serialize());
+                    console.log(`Transaction Sent: https://explorer.solana.com/tx/${txId}`);
+                } else {
+                    console.warn("Skipping non-Solana transaction:", tx.transaction);
+                }
+            }
 
             alert("Token bridging to Sonic initiated!");
         } catch (error) {
