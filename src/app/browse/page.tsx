@@ -8,13 +8,22 @@ import Agents from "@/Components/BrowseAgents/Agents";
 
 const Page = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileNavVisible, setIsMobileNavVisible] = useState(false);
 
   return (
     <div className="h-screen flex">
       {/* Sidebar Navbar */}
-      <Navbar isCollapsed={isCollapsed} />
+      <Navbar
+        isCollapsed={isCollapsed}
+        isMobileNavVisible={isMobileNavVisible}
+        onMobileNavToggle={() => setIsMobileNavVisible(!isMobileNavVisible)}
+      />
       <div className="flex-1 h-full">
-       <Agents onToggle={() => setIsCollapsed((prev) => !prev)}/>
+        <Agents
+          onToggle={() => setIsCollapsed((prev) => !prev)}
+          onMobileNavToggle={() => setIsMobileNavVisible(!isMobileNavVisible)}
+          isMobileNavVisible={isMobileNavVisible}
+        />
       </div>
     </div>
   );

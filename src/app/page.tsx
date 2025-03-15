@@ -6,15 +6,23 @@ import Navbar from "@/Components/Navbar/Navbar";
 
 export default function Home() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileNavVisible, setIsMobileNavVisible] = useState(false);
 
   return (
-    <div className="h-screen flex overflow-hidden">
+    <div className="h-screen flex overflow-hidden bg-white">
       {/* Sidebar Navbar */}
-      <Navbar isCollapsed={isCollapsed} />
+      <Navbar 
+        isCollapsed={isCollapsed} 
+        isMobileNavVisible={isMobileNavVisible} 
+        onMobileNavToggle={() => setIsMobileNavVisible(!isMobileNavVisible)}
+      />
 
       {/* Main Dashboard */}
       <div className="flex-1 h-screen overflow-auto">
-        <Dashboard onToggle={() => setIsCollapsed((prev) => !prev)} />
+        <Dashboard 
+          onToggle={() => setIsCollapsed((prev) => !prev)} 
+          onMobileNavToggle={() => setIsMobileNavVisible(!isMobileNavVisible)}
+        />
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import InlineSVG from "react-inlinesvg";
 import "./Agents.css";
@@ -57,8 +58,16 @@ const agents = [
 
 const categories = ["Investing", "DAO", "Computational", "DeFi"];
 
-const Agents = ({ onToggle }: { onToggle: () => void }) => {
-  const [isCategoryOpen, setIsCategoryOpen] = useState(true);
+const Agents = ({
+  onToggle,
+  onMobileNavToggle,
+  isMobileNavVisible,
+}: {
+  onToggle: () => void;
+  onMobileNavToggle: () => void;
+  isMobileNavVisible: boolean;
+}) => {
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const toggleCategory = (category: string) => {
@@ -73,7 +82,7 @@ const Agents = ({ onToggle }: { onToggle: () => void }) => {
     <div className="flex flex-col h-screen bg-black text-white overflow-hidden">
       {/* Header */}
       <div
-        className="bg-gray-900 p-4 flex flex-row items-center gap-[20px] m-4"
+        className="bg-gray-900 p-4 flex items-center gap-5 w-full"
         style={{ fontFamily: "orbitron" }}
       >
         <button onClick={onToggle} className="focus:outline-none">
@@ -88,9 +97,9 @@ const Agents = ({ onToggle }: { onToggle: () => void }) => {
       </div>
 
       {/* Layout with Sidebar & Main Content */}
-      <div className="flex flex-grow overflow-hidden">
-        {/* Sidebar (Scrollable) */}
-        <div className="w-1/4 p-6 h-screen overflow-y-auto">
+      <div className="flex flex-col md:flex-row flex-grow h-screen">
+        {/* Sidebar - Fixed, No Scroll */}
+        <div className="md:w-1/4 w-full md:p-6 p-3">
           {/* Category Dropdown */}
           <div className="mt-6" style={{ fontFamily: "manrope" }}>
             <div
@@ -103,11 +112,19 @@ const Agents = ({ onToggle }: { onToggle: () => void }) => {
                   isCategoryOpen ? "rotate-90" : "rotate-0"
                 }`}
               />
-              <h3 className="text-md font-semibold" style={{ fontFamily: "orbitron" }}>Category</h3>
+              <h3
+                className="text-md font-semibold"
+                style={{ fontFamily: "orbitron" }}
+              >
+                Category
+              </h3>
             </div>
 
             {isCategoryOpen && (
-              <div className="mt-2 flex flex-col gap-2" style={{ fontFamily: "manrope" }}>
+              <div
+                className="mt-2 flex flex-col gap-2"
+                style={{ fontFamily: "manrope" }}
+              >
                 {categories.map((category) => (
                   <label
                     key={category}
@@ -136,74 +153,102 @@ const Agents = ({ onToggle }: { onToggle: () => void }) => {
           </div>
         </div>
 
-        {/* Main Content Wrapper (Scrollable) */}
-        <div className="w-3/4 h-screen overflow-y-auto">
-          <main className="p-6">
-            {/* Search Bar */}
-            <div className="mb-6 flex justify-start">
-              <input
-                type="text"
-                placeholder="Search"
-                className="w-1/2 p-3 bg-transparent text-white border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
-              />
-            </div>
+        {/* Main Content - Scrollable */}
+        <div className="md:w-3/4 w-full p-6 overflow-y-auto h-screen">
+          {/* Search Bar */}
+          <div className="mb-6 flex justify-start">
+            <input
+              type="text"
+              placeholder="Search"
+              className="w-full md:w-1/2 p-3 bg-transparent text-white border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
+            />
+          </div>
 
-            {/* Agents Grid */}
-            <div className="grid grid-cols-2 gap-6 mb-[100px]">
-              {agents.map((agent, index) => (
-                <div key={index} className="common cursor-pointer">
-                  <div
-                    className="p-6 bg-gray-950 border-t border-l border-r border-gray-700 rounded-lg 
-                  hover:border-b hover:border-gray-500 
-                  transition-all duration-300 ease-in-out"
-                  >
-                    {/* Logo, Title, and Button in the Same Line */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        {agent.logo && (
-                          <img
-                            src={agent.logo}
-                            alt={`${agent.name} logo`}
-                            className="h-8 w-8"
-                          />
-                        )}
-                        <h3 className="text-lg font-semibold" style={{ fontFamily: "orbitron" }}>{agent.name}</h3>
-                      </div>
-                      <button className="py-2 px-3 bg-gray-700 hover:bg-gray-600 rounded text-sm" style={{ fontFamily: "manrope" }}>
-                        Run Agent
-                      </button>
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-sm text-gray-400" style={{ fontFamily: "manrope" }}>{agent.description}</p>
-
-                    {/* Author and Verification */}
-                    <div className="mt-4 flex items-center justify-between">
-                      {/* Author Section */}
-                      <div className="flex items-center gap-2" style={{ fontFamily: "manrope" }}>
-                        <span className="text-gray-500 text-sm">By</span>
+          {/* Agents Grid - Scrollable */}
+          <div className="grid md:grid-cols-2 grid-cols-1 gap-6 mb-[100px]">
+            {agents.map((agent, index) => (
+              <div key={index} className="common cursor-pointer">
+                <div
+                  className="p-6 bg-gray-950 border-t border-l border-r border-gray-700 rounded-lg 
+            hover:border-b hover:border-gray-500 
+            transition-all duration-300 ease-in-out"
+                >
+                  {/* Logo, Title, and Button in the Same Line */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      {agent.logo && (
                         <img
-                          src="https://pbs.twimg.com/profile_images/1804597854725431296/fLn9-v6H_400x400.jpg"
-                          alt="Author Logo"
-                          className="w-5 h-5 rounded-full"
+                          src={agent.logo}
+                          alt={`${agent.name} logo`}
+                          className="h-8 w-8"
                         />
-                        <span className="text-gray-500 text-sm" style={{ fontFamily: "manrope" }}>
-                          {agent.author}
-                        </span>
-                      </div>
-
-                      {/* Verified Badge */}
-                      {agent.verified && (
-                        <span className="px-3 flex flex-row items-center justify-center gap-1 py-1 text-xs text-green-500 border border-green-500 rounded-2xl" style={{ fontFamily: "manrope" }}>
-                          <InlineSVG src="icons/green-tick.svg" className="w-3 h-3"/> Verified
-                        </span>
                       )}
+                      <h5
+                        className="text-base font-semibold"
+                        style={{ fontFamily: "orbitron" }}
+                      >
+                        {agent.name.length > 10
+                          ? `${agent.name.slice(0, 10)}...`
+                          : agent.name}
+                      </h5>
                     </div>
+                    <button
+                      className="py-2 px-3 bg-gray-700 hover:bg-gray-600 cursor-pointer rounded text-sm"
+                      style={{ fontFamily: "manrope" }}
+                    >
+                      Run Agent
+                    </button>
+                  </div>
+
+                  {/* Description */}
+                  <p
+                    className="text-sm text-gray-400 truncate"
+                    style={{
+                      fontFamily: "manrope",
+                      maxWidth: "calc(100% - 1rem)",
+                    }}
+                  >
+                    {agent.description.length > 45
+                      ? `${agent.description.slice(0, 45)}...`
+                      : agent.description}
+                  </p>
+
+                  {/* Author and Verification */}
+                  <div className="mt-4 flex items-center justify-between">
+                    {/* Author Section */}
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ fontFamily: "manrope" }}
+                    >
+                      <span className="text-gray-500 text-sm">By</span>
+                      <img
+                        src="https://pbs.twimg.com/profile_images/1804597854725431296/fLn9-v6H_400x400.jpg"
+                        alt="Author Logo"
+                        className="w-5 h-5 rounded-full"
+                      />
+                      <span className="text-gray-500 text-sm">
+                        {agent.author}
+                      </span>
+                    </div>
+
+                    {/* Verified Badge */}
+                    {agent.verified && (
+                      <span
+                        className="px-3 flex flex-row items-center justify-center gap-1 py-1 text-xs text-green-500 border border-green-500 rounded-2xl"
+                        style={{ fontFamily: "manrope" }}
+                      >
+                        <InlineSVG
+                          src="icons/green-tick.svg"
+                          className="w-3 h-3"
+                        />{" "}
+                        Verified
+                      </span>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          </main>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
