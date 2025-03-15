@@ -6,12 +6,13 @@ import { useEffect, useState } from "react";
 import { WarpCore, HyperlaneContractsMap, MultiProvider, MultiProtocolProvider, HyperlaneCore, Token, TokenAmount, TokenStandard, WarpTypedTransaction } from "@hyperlane-xyz/sdk";
 import { Connection, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { warpCore } from "@/lib/warpcore";
+import { useBridgeToken } from "@/hooks/useBridge";
 
 const solanaMailbox = "E588QtVUvresuXq2KoNEwAmoifCzYGpRBdHByN9KQMbi"; // 🔥 Required for Solana messaging
 const solanaCollateralAddress = "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"; // 🔥 Required for Sealevel hyp tokens
 
-const solanaRpcUrl = "https://api.mainnet-beta.solana.com"; // "https://solana-mainnet.g.alchemy.com/v2/H-LqusqbIhSz4K9KE8vQ9i8C4PQPGD-K"
-const sonicRpcUrl = "https://sonic.helius-rpc.com";
+const solanaRpcUrl = "https://mainnet.helius-rpc.com/?api-key=72355e0a-3db0-4c8b-98f6-426d805d5bb6"; // "https://solana-mainnet.g.alchemy.com/v2/H-LqusqbIhSz4K9KE8vQ9i8C4PQPGD-K"
+const sonicRpcUrl = "https://api.mainnet-alpha.sonic.game";
 
 export default function TestPage2() {
     const { connectWallet, user, ready } = usePrivy();
@@ -91,66 +92,75 @@ export default function TestPage2() {
         fetchFee();
     }, [wallets.length]);
 
-    const bridgeToken = async () => {
-        if (!wallets.length) return alert("No wallet connected!");
+    // const bridgeToken = async () => {
+    //     if (!wallets.length) return alert("No wallet connected!");
 
-        const solanaWallet = wallets[0]; // Phantom wallet from Privy
-        const solanaAddress = solanaWallet.address;
-        const connection = new Connection(solanaRpcUrl);
+    //     const solanaWallet = wallets[0]; // Phantom wallet from Privy
+    //     const solanaAddress = solanaWallet.address;
+    //     const connection = new Connection(solanaRpcUrl);
 
 
 
-        try {
-            const amount = "1";
-            const destination = "sonicsvm";
-            const recipient = wallets[0].address;
-            const originToken = warpCore.tokens[1];
-            const sender = wallets[0].address;
-            const parsedAmt = 0.01 * 10 ** 9; 
-            const originTokenAmount = originToken.amount(parsedAmt.toString());
+    //     try {
+    //         const amount = "1";
+    //         const destination = "sonicsvm";
+    //         const recipient = "CruDRF9rQ4LjMgQkMSSPi1tFqJXAgdDi1BWqwWnhrKsv";  // ByBit address
+    //         const originToken = warpCore.tokens[1];
+    //         const sender = wallets[0].address;
+    //         const parsedAmt = 0.02 * 10 ** 9;
+    //         const originTokenAmount = originToken.amount(parsedAmt.toString());
 
-            console.log("Org Token:", originToken)
-            console.log("Org Token Amt:", originTokenAmount)
+    //         console.log("Org Token:", originToken)
+    //         console.log("Org Token Amt:", originTokenAmount)
 
-            const fee = await warpCore.getInterchainTransferFee({
-                originToken,
-                destination: "sonicsvm",
-                sender,
-            }); // 9 decimals
+    //         const txs: WarpTypedTransaction[] = await warpCore.getTransferRemoteTxs({
+    //             originTokenAmount,
+    //             destination,
+    //             sender,
+    //             recipient,
+    //         });
 
-            console.log("Fee:", fee)
+    //         console.log("Transactions to Sign:", txs);
 
-            const txs: WarpTypedTransaction[] = await warpCore.getTransferRemoteTxs({
-                originTokenAmount,
-                destination,
-                sender,
-                recipient,
-            });
+    //         for (const tx of txs) {
+    //             // ✅ Ensure the transaction is a valid Solana transaction before adding it
+    //             if (tx.transaction instanceof TransactionInstruction || tx.transaction instanceof Transaction) {
+    //                 const signedTx = await solanaWallet.signTransaction(tx.transaction as Transaction);
+    //                 console.log("Signed by first signer:", signedTx.signatures);
 
-            console.log("Transactions to Sign:", txs);
+    //                 const txId = await connection.sendRawTransaction(signedTx.serialize());
+    //                 console.log(`Transaction Sent: https://explorer.solana.com/tx/${txId}`);
+    //             } else {
+    //                 console.warn("Skipping non-Solana transaction:", tx.transaction);
+    //             }
+    //         }
 
-            for (const tx of txs) {
-                // ✅ Ensure the transaction is a valid Solana transaction before adding it
-                if (tx.transaction instanceof TransactionInstruction || tx.transaction instanceof Transaction) {
-                    const solanaTransaction = new Transaction().add(tx.transaction);
-                    solanaTransaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-                    solanaTransaction.feePayer = new PublicKey(solanaAddress);
+    //         alert("Token bridging to Sonic initiated!");
+    //     } catch (error) {
+    //         console.error("Bridging failed:", error);
+    //         alert("Failed to bridge tokens. Check console.");
+    //     }
+    // };
 
-                    // ✅ Sign & Send Transaction using Phantom Wallet
-                    const signedTx = await solanaWallet.signTransaction(solanaTransaction);
-                    const txId = await connection.sendRawTransaction(signedTx.serialize());
-                    console.log(`Transaction Sent: https://explorer.solana.com/tx/${txId}`);
-                } else {
-                    console.warn("Skipping non-Solana transaction:", tx.transaction);
-                }
-            }
+    const { bridgeToken } = useBridgeToken();
 
-            alert("Token bridging to Sonic initiated!");
-        } catch (error) {
-            console.error("Bridging failed:", error);
-            alert("Failed to bridge tokens. Check console.");
+    const bridgeTokens = async () => {
+        const fromChain = "solanamainnet";
+        const amount = "0.001";
+        const recipientPhantam = "FwZjhNohnECbt6s9nJcmuPo8hGyQVTGmqz8m16D83Pi9";  // Phantom
+        const recipientBybit = "CruDRF9rQ4LjMgQkMSSPi1tFqJXAgdDi1BWqwWnhrKsv";   // Bybit
+
+        const res = await bridgeToken({ fromChain: fromChain, amount: amount, recipientAddress: recipientBybit });
+
+        console.log("RES: ", res);
+
+        if (res?.success) {
+            console.log("SUCCESS:", res.message);
+        } else {
+            console.log("ERROR:", res?.message);
         }
-    };
+
+    }
 
     return (
         <div className="w-full h-full bg-red-50">
@@ -164,7 +174,7 @@ export default function TestPage2() {
             </div>
 
             <div className="main w-full h-full p-6">
-                <button onClick={bridgeToken} className="px-6 py-2 rounded-md bg-blue-500 text-white">
+                <button onClick={bridgeTokens} className="px-6 py-2 rounded-md bg-blue-500 text-white">
                     Bridge 0.1 SOL to Sonic
                 </button>
             </div>
