@@ -7,7 +7,10 @@ import Navbar from "@/Components/Navbar/Navbar";
 export default function Home() {
   // Load the initial state from localStorage
   const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
-    return JSON.parse(localStorage.getItem("isCollapsed") || "false");
+    if (typeof window !== "undefined") {
+      return JSON.parse(localStorage.getItem("isCollapsed") || "false");
+    }
+    return false;
   });
   
 
@@ -15,7 +18,9 @@ export default function Home() {
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("isCollapsed", JSON.stringify(isCollapsed));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("isCollapsed", JSON.stringify(isCollapsed));
+    }
   }, [isCollapsed]);
 
   return (

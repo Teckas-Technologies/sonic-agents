@@ -260,7 +260,7 @@ export default function Dashboard({
         style={{ fontFamily: "orbitron" }}
       >
         <button
-           onClick={() => {
+          onClick={() => {
             onToggle(); // Always toggle collapse state
             if (window.innerWidth < 768) {
               onMobileNavToggle(); // Only toggle mobile nav visibility on mobile screens
@@ -281,7 +281,7 @@ export default function Dashboard({
       </div>
 
 
-      <div className="flex md:flex-1 w-full h-[400px] md:h-0 overflow-hidden">
+      <div className="flex md:flex-1 w-full h-[95%] md:h-0 overflow-hidden">
         {/* Sidebar */}
         <div className="hidden md:flex flex-col md:w-[30%] lg:w-[29%] xl:w-[28%] bg-black p-4 m-4 rounded-lg border border-gray-700 overflow-hidden">
           {/* Header + Input */}
@@ -353,10 +353,10 @@ export default function Dashboard({
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col justify-center h-full md:w-[70%] lg:w-[71%] xl:w-[72%]">
+        <div className="flex-1 flex flex-col justify-center w-full md:w-[70%] lg:w-[71%] xl:w-[72%]">
           {/* Execute Transactions with AI Box */}
           <div className="flex-1 flex flex-col items-center justify-center bg-gray-950 border border-gray-700 rounded-lg md:mt-4 md:mx-4 p-[0.1rem] md:p-[0.4rem] lg:p-[0.7rem] xl:p-[1rem]">
-            {messages.length > 0 && <div className="top w-full flex justify-end items-center gap-2">
+            {messages.length > 0 && <div className="top w-full flex justify-end items-center gap-2 pr-5 md:pr-0">
               <h2
                 className="text-sm font-thin"
                 style={{ fontFamily: "orbitron" }}
@@ -392,7 +392,7 @@ export default function Dashboard({
               </button>}
             </div>}
             {messages.length !== 0 && (
-              <div className="w-full md:max-h-[27rem] lg:max-h-[29rem] xl:max-h-[30rem] h-full px-4 scroll-d overflow-y-auto">
+              <div className="w-full max-h-[70vh] md:max-h-[27rem] lg:max-h-[29rem] xl:max-h-[30rem] h-full px-4 scroll-d overflow-y-auto">
                 {messages.map((msg, index) => (
                   <>
                     <div
@@ -496,7 +496,7 @@ export default function Dashboard({
                 className="px-3 py-1 bg-[#fbb042] rounded text-black text-xs md:text-sm font-bold"
                 style={{ fontFamily: "orbitron" }}
               >
-                {activeAgent ? activeAgent.toUpperCase() : "SONIC ASSISTANT"}
+                {activeAgent === "bridgeAgent" ? "Bridge Assistant" : activeAgent === "swapAgent" ? "Swap Assistant" : "SONIC ASSISTANT"}
               </span>
 
               {/* Agents Button */}
@@ -512,6 +512,7 @@ export default function Dashboard({
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 setActiveAgent={setActiveAgent}
+                sonicAgents={agents}
               />
             </div>
 
@@ -522,17 +523,22 @@ export default function Dashboard({
                 placeholder="Message Smart Actions..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleChat();
+                  }
+                }}
                 className="flex-1 bg-transparent outline-none text-white text-sm placeholder-gray-400 p-2"
                 style={{ fontFamily: "manrope" }}
               />
 
               {/* Send Button with Better Positioning */}
               <button
-                className={`ml-3 p-2 rounded flex items-center justify-center transition-all ${
-                  message.trim()
+                className={`ml-3 p-2 rounded flex items-center justify-center transition-all ${message.trim()
                     ? "bg-[#0000ff] hover:bg-blue-700"
                     : "bg-gray-700"
-                }`}
+                  }`}
+                onClick={handleChat}
                 disabled={!message.trim()}
               >
                 <BiUpArrowAlt className="w-6 h-6 text-white" />
