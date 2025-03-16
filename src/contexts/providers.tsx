@@ -15,8 +15,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       config={{
         // Customize Privy's appearance in your app
         appearance: {
-          landingHeader: "Sonic Agents",
-          loginMessage: "Use agents on top of sonic",
+          landingHeader: "Sonic SVM Agents",
+          loginMessage: "Use agents on top of Sonic SVM",
           theme: 'dark',
           accentColor: '#676FFF',
           logo: 'https://your-logo-url',

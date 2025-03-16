@@ -1,32 +1,59 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import InlineSVG from "react-inlinesvg";
 import { BiUpArrowAlt } from "react-icons/bi";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 import { FaSearch } from "react-icons/fa";
+import { usePrivy, useSolanaWallets } from "@privy-io/react-auth";
+import { BridgeData, useBridgeToken } from "@/hooks/useBridge";
+import { useChat } from "@/hooks/useChatHook";
+import dynamic from "next/dynamic";
+
+const MarkdownToJSX = dynamic(() => import("markdown-to-jsx"), { ssr: false });
 
 const agents = [
   {
     name: "Delta Trade DCA Helper",
-    description: "Agent description here...",
+    description: "Automate your Dollar-Cost Averaging (DCA) strategy with precision. This agent helps you execute scheduled trades at optimal intervals, reducing market volatility impact.",
     logo: "images/sonic-logo.png",
   },
   {
     name: "PotLock-Assistant",
-    description: "Agent description here...",
+    description: "A secure and efficient assistant for managing locked liquidity pools. It ensures smooth handling of fund releases, withdrawals, and re-locking based on predefined conditions.",
     logo: "images/sonic-logo.png",
   },
   {
     name: "Bitte Distribute Tokens",
-    description: "Agent description here...",
+    description: "Effortlessly distribute tokens to multiple recipients in a single transaction. This agent streamlines batch token transfers, saving time and gas fees.",
     logo: "images/sonic-logo.png",
   },
   {
     name: "Bitte WETH Wraptor",
-    description: "Agent description here...",
+    description: "Easily wrap and unwrap ETH into WETH for seamless DeFi interactions. This agent simplifies token conversions, ensuring efficient trading and liquidity provision.",
     logo: "images/sonic-logo.png",
   },
+];
+
+interface Message {
+  role: "ai" | "human",
+  message: string;
+  txHash?: string;
+  fromChain?: "solanamainnet" | "sonicsvm";
+}
+
+const dummymessages: Message[] = [
+  { role: "ai", message: "Hello, how can I assist you?" },
+  { role: "human", message: "What is your name?" },
+  { role: "ai", message: "I'm an AI assistant, you can call me ChatGPT!" },
+  { role: "human", message: "Can you tell me a joke?" },
+  { role: "ai", message: "Sure! Why don’t skeletons fight each other? Because they don’t have the guts!" },
+  { role: "human", message: "What's the weather like today?" },
+  { role: "ai", message: "I'm not connected to live data, but you can check a weather website for the latest update!" },
+  { role: "human", message: "Can you suggest a good book to read?" },
+  { role: "ai", message: "Of course! If you like fiction, 'The Alchemist' by Paulo Coelho is a great choice!" },
+  { role: "human", message: "What is the capital of Japan?" },
+  { role: "ai", message: "The capital of Japan is Tokyo!" }
 ];
 
 export default function Dashboard({
@@ -39,6 +66,170 @@ export default function Dashboard({
   const [search, setSearch] = useState("");
   const [message, setMessage] = useState("");
   const [activeAgent, setActiveAgent] = useState<string | null>(null);
+  const { connectWallet, user, ready } = usePrivy();
+  const { bridgeToken } = useBridgeToken();
+  const { chat, fetchChatHistory, clearHistory, fetchAgents } = useChat();
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [agents, setAgents] = useState([]);
+  const [isBridging, setIsBridging] = useState(false);
+
+  const { wallets } = useSolanaWallets();
+
+  useEffect(() => {
+    // Scroll to bottom when messages update
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  console.log("Wallets:", wallets[0])
+  console.log("User:", user)
+
+  const checkConnection = async () => {
+    setIsConnected(await wallets[0].isConnected())
+  }
+
+  const checkLinked = async () => {
+    if (wallets.length === 0) {
+      return;
+    }
+    const linked = await wallets[0].linked;
+    console.log("Linked: ", linked);
+    if (!linked) {
+      const res = await wallets[0].loginOrLink();
+      console.log("RES:", res)
+    }
+  }
+
+  useEffect(() => {
+    if (wallets.length > 0) {
+      checkConnection();
+    }
+  }, [wallets.length])
+
+  useEffect(() => {
+    if (wallets.length > 0) {
+      checkLinked()
+    }
+  }, [wallets.length])
+
+  const handleDisconnect = async () => {
+    if (wallets.length === 0) {
+      return;
+    }
+    setIsConnected(false);
+    await wallets[0].disconnect();
+  }
+
+  useEffect(() => {
+    if (wallets.length > 0) {
+      fetchHistory();
+    }
+  }, [wallets.length, activeAgent])
+
+  useEffect(() => {
+    fetchSonicAgents();
+  }, [])
+
+  useEffect(() => {
+    if (agents.length > 0) {
+      setActiveAgent(agents[0]);
+    }
+  }, [agents])
+
+  const fetchHistory = async () => {
+    const history = await fetchChatHistory(activeAgent || "bridgeAgent");
+    setMessages(history?.threads);
+  }
+
+  const fetchSonicAgents = async () => {
+    const res = await fetchAgents();
+    setAgents(res.agents);
+  }
+
+  const clearChatHistory = async () => {
+    await clearHistory(activeAgent || "bridgeAgent");
+    setMessages([])
+  }
+
+  // Chat functions & actions
+  const handleChat = async () => {
+    if (!message.trim()) return;
+    if (isLoading) {
+      return;
+    }
+
+    const userMessage: Message = { role: "human", message: message };
+    setMessages((prev) => [...prev, userMessage]);
+    setMessage(""); // Clear the input field
+
+    if (wallets[0]?.walletClientType === "phantom") {
+      setMessages((prev) => [...prev, { role: "ai", message: "Please connect your wallet using one of the following: Backpack, OKX Web3 Wallet, Nightly Wallet, or Bybit Wallet." }]);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await chat({ inputMessage: message, agentName: activeAgent || "bridgeAgent" });
+      console.log("RES:", response);
+      if (response?.success) {
+        if (response?.data?.tool_response !== "None") {
+          const toolMessage = JSON.parse(response?.data?.tool_response?.replace(/^"|"$/g, ""));
+          console.log("TOOL MSG: ", toolMessage)
+
+          if (toolMessage?.success) {
+            if (toolMessage?.type === "bridge") {
+              const bridgeData: BridgeData = {
+                fromChain: toolMessage?.fromChain,
+                amount: toolMessage?.amount,
+              };
+
+              if (toolMessage?.recipientAddress) {
+                bridgeData.recipientAddress = toolMessage.recipientAddress;
+              }
+
+              setMessages((prev) => [...prev, { role: "ai", message: `Bridge from ${toolMessage?.fromChain === "solanamainnet" ? "Solana" : "Sonic SVM"} to ${toolMessage?.fromChain === "solanamainnet" ? "Sonic SVM" : "Solana"} is in progress...` }]);
+              setIsBridging(true);
+
+              const res = await bridgeToken(bridgeData);
+              console.log("RES: ", res);
+
+              if (res?.success) {
+                setMessages((prev) => [...prev, { role: "ai", message: "Your recent bridge was successful!", txHash: res?.txHash, fromChain: toolMessage?.fromChain }]);
+                setIsBridging(false);
+                console.log("SUCCESS:", res.message);
+                return;
+              } else {
+                setMessages((prev) => [...prev, { role: "ai", message: "Your recent bridge failed!" }]);
+                setIsBridging(false);
+                console.log("ERROR:", res?.message);
+                return;
+              }
+
+            } else if (toolMessage?.type === "swap") {
+              // TODO swap integration
+              setMessages((prev) => [...prev, { role: "ai", message: "Your swap was started ....!" }]);
+              return;
+            }
+          }
+        }
+
+        const aiMessage: Message = { role: "ai", message: response.data?.ai_message };
+        setMessages((prev) => [...prev, aiMessage]);
+      } else {
+        setMessages((prev) => [...prev, { role: "ai", message: "Something went wrong!" }]);
+      }
+    } catch (error: any) {
+      console.error("Chat error:", error);
+    } finally {
+      setIsLoading(false);
+      setIsBridging(false);
+    }
+  }
+
+
 
   return (
     <div className="flex flex-col items-center items-center h-screen bg-black text-white">
@@ -67,9 +258,9 @@ export default function Dashboard({
         <div className="text-white text-xs">VEJAS6QK0U1BTPQK</div>
       </div>
 
-      <div className="flex md:flex-1 h-[400px] md:h-0 overflow-hidden">
+      <div className="flex md:flex-1 w-full h-[400px] md:h-0 overflow-hidden">
         {/* Sidebar */}
-        <div className="hidden md:flex flex-col xl:w-[300px] xxl:w-[400px] bg-black p-4 m-4 rounded-lg border border-gray-700 overflow-hidden">
+        <div className="hidden md:flex flex-col md:w-[30%] lg:w-[29%] xl:w-[28%] bg-black p-4 m-4 rounded-lg border border-gray-700 overflow-hidden">
           {/* Header + Input */}
           <div className="flex-shrink-0">
             <h2
@@ -98,37 +289,40 @@ export default function Dashboard({
           </div>
 
           {/* Scrollable List (Fixed) */}
-          <div className="flex-grow overflow-y-auto border border-gray-700 p-3 mt-4 rounded max-h-[430px]">
-            {agents.map((agent) => (
+          <div className="flex-grow overflow-y-auto scroll-d border border-gray-700 p-3 mt-4 rounded max-h-[430px]">
+            {agents.length > 0 && agents?.map((agent) => (
               <div
-                key={agent.name}
-                onClick={() => setActiveAgent(agent.name)}
+                key={agent}
+                onClick={() => setActiveAgent(agent)}
                 className={`p-4 rounded cursor-pointer rounded-md border transition-all mt-2 duration-200 bg-[#0c1a27] 
-          ${
-            activeAgent === agent.name
-              ? "border-[#fde68a]"
-              : "border-transparent hover:border-[#fde68a]"
-          }`}
+          ${activeAgent === agent
+                    ? "border-[#fde68a]"
+                    : "border-transparent hover:border-[#fde68a]"
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-1">
                     <img
-                      src={agent.logo}
-                      alt={agent.name}
+                      src="images/sonic-logo.png"
+                      alt={agent}
                       className="h-6 rounded-full"
                     />
-                    <h3 className="font-semibold text-xs overflow-hidden text-ellipsis whitespace-nowrap w-[80%]">
-                      {agent.name.length > 15
-                        ? agent.name.slice(0, 20) + "..."
-                        : agent.name}
+                    <h3 className="font-semibold text-md truncate-1-lines w-[85%]">
+                      {agent === "bridgeAgent" ?
+                        "Bridge Assistant" :
+                        agent === "swapAgent" ?
+                          "Swap Assistant" :
+                          "Liquidity Assistant"}
                     </h3>
                   </div>
                   <IoMdInformationCircleOutline className="w-5 h-5 text-gray-400 cursor-pointer" />
                 </div>
-                <p className="text-sm text-gray-400 mt-1 overflow-hidden text-ellipsis whitespace-nowrap w-[90%]">
-                  {agent.description.length > 15
-                    ? agent.description.slice(0, 35) + "..."
-                    : agent.description}
+                <p className="text-sm text-gray-400 mt-1 w-[90%] truncate-3-lines">
+                  {agent === "bridgeAgent" ?
+                    "Assistant for helping users to bridge tokens between Solana & Sonic SVM chains." :
+                    agent === "swapAgent" ?
+                      "Assistant for helping users to swap tokens between Solana & Sonic SVM chains." :
+                      "Assistant for helping users to add liquidity to pool in Solana & Sonic SVM chains."}
                 </p>
               </div>
             ))}
@@ -136,10 +330,24 @@ export default function Dashboard({
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col justify-center h-full">
+        <div className="flex-1 flex flex-col justify-center h-full md:w-[70%] lg:w-[71%] xl:w-[72%]">
           {/* Execute Transactions with AI Box */}
-          <div className="flex-1 flex items-center justify-center bg-gray-950 border border-gray-700 rounded-lg md:mt-4 md:mx-4 xl:px-[200px] p-[60px]">
-            <div className="text-center">
+          <div className="flex-1 flex flex-col items-center justify-center bg-gray-950 border border-gray-700 rounded-lg md:mt-4 md:mx-4 p-[0.1rem] md:p-[0.4rem] lg:p-[0.7rem] xl:p-[1rem]">
+            {messages.length > 0 && <div className="top w-full flex justify-end items-center gap-2">
+              <h2
+                className="text-sm font-thin"
+                style={{ fontFamily: "orbitron" }}
+              >
+                Clear History
+              </h2>
+              <div className="clear-chat w-[1.5rem] h-[1.5rem] flex items-center justify-center cursor-pointer" onClick={clearChatHistory}>
+                <InlineSVG
+                  src="/icons/clear.svg"
+                  className="fill-current bg-transparent text-gray-700 bg-white rounded-md w-[1.5rem] h-[1.5rem]"
+                />
+              </div>
+            </div>}
+            {messages.length === 0 && <div className="text-center">
               <div className="flex justify-center items-center">
                 <img
                   src="images/sonic-logo.png"
@@ -152,13 +360,73 @@ export default function Dashboard({
               >
                 Execute Transactions with AI
               </h2>
-              <button
-                className="mt-4 bg-white text-black md:px-7 md:py-2 px-4 py-1 rounded font-semibold"
+              {!isConnected && <button
+                className="mt-4 bg-white text-black md:px-7 md:py-2 px-4 py-1 rounded font-semibold cursor-pointer"
                 style={{ fontFamily: "manrope" }}
+                onClick={connectWallet}
               >
                 Connect
-              </button>
-            </div>
+              </button>}
+            </div>}
+            {messages.length !== 0 && (
+              <div className="w-full md:max-h-[27rem] lg:max-h-[29rem] xl:max-h-[30rem] h-full px-4 scroll-d overflow-y-auto">
+                {messages.map((msg, index) => (
+                  <>
+                    <div
+                      key={index}
+                      className={`message w-full h-auto flex gap-1 md:gap-2 lg:gap-3 my-2 ${msg.role === "ai" ? "justify-start" : "justify-end"}`}
+                    >
+                      {/* <p className={`px-3 py-2.5 max-w-md rounded-md w-auto ${msg.role === "ai" ? "bg-gray-800" : "bg-[#0000ff]"}`}>
+                      {msg.message}
+                    </p> */}
+
+                      <div className={`px-3 py-2.5 max-w-md rounded-md w-auto ${msg.role === "ai" ? "bg-gray-800" : "bg-[#0000ff]"} `}>
+                        <MarkdownToJSX
+                          options={{
+                            disableParsingRawHTML: true,
+                            overrides: {
+                              table: {
+                                props: {
+                                  className:
+                                    "table-auto w-full border-collapse border border-gray-300",
+                                },
+                              },
+                              th: {
+                                props: {
+                                  className: "border border-gray-300 p-2 bg-gray-200 text-black min-w-[4rem]",
+                                },
+                              },
+                              td: {
+                                props: {
+                                  className: "border border-gray-300 p-2",
+                                },
+                              }
+                            },
+                          }}
+                        >
+                          {msg.message}
+                        </MarkdownToJSX>
+                      </div>
+                      {msg?.txHash && msg.role === "ai" && <>
+                        <a href={`${msg?.fromChain === "solanamainnet" ? `https://explorer.solana.com/tx/${msg?.txHash}` : `https://explorer.sonic.game/tx/${msg?.txHash}`}`} target="_blank" rel="noopener noreferrer" className="approve-btn flex items-center justify-center gap-1 px-2  mt-1 min-w-[5rem] bg-grey-700 max-w-[9rem] rounded-3xl border-1 border-zinc-600 hover:border-zinc-400 cursor-pointer">
+                          <h2 className="text-center dark:text-black text-sm">Check Explorer</h2>
+                          <InlineSVG
+                            src="/icons/goto.svg"
+                            className="fill-current bg-transparent text-white w-2.5 h-2.8"
+                          />
+                        </a>
+                      </>}
+                    </div>
+                    {isLoading && index === messages.length - 1 && <div className={`whole-div w-full flex items-center gap-1 justify-start`}>
+                      <div className={`relative message px-3 py-2.5 flex items-center gap-1 rounded-lg max-w-xs bg-gray-800`}>
+                        <p className={`text-sm text-white`}>Typing...</p>
+                      </div>
+                    </div>}
+                    <div ref={messagesEndRef} />
+                  </>
+                ))}
+              </div>
+            )}
           </div>
 
           {/*Desktop */}
@@ -170,7 +438,7 @@ export default function Dashboard({
                 className="px-3 py-1 bg-[#fbb042] hidden md:block rounded text-black md:text-sm text-[8px] font-bold"
                 style={{ fontFamily: "orbitron" }}
               >
-                {activeAgent ? activeAgent.toUpperCase() : "SONIC ASSISTANT"}
+                {activeAgent === "bridgeAgent" ? "Bridge Assistant" : activeAgent === "swapAgent" ? "Swap Assistant" : "SONIC ASSISTANT"}
               </span>
               <input
                 type="text"
@@ -178,15 +446,20 @@ export default function Dashboard({
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 className="flex-1 md:p-2 mt-2 md:mt-0 bg-transparent outline-none text-white md:ml-2 placeholder-gray-400"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleChat();
+                  }
+                }}
                 style={{ fontFamily: "manrope" }}
               />
             </div>
 
             {/* Arrow Button */}
             <div
-              className={`md:w-12 w-10 flex cursor-pointer justify-center items-center px-2 py-2 rounded ml-3 transition-all ${
-                message.trim() ? "bg-[#0000ff]" : "bg-gray-700"
-              }`}
+              className={`md:w-12 w-10 flex cursor-pointer justify-center items-center px-2 py-2 rounded ml-3 transition-all ${message.trim() ? "bg-[#0000ff]" : "bg-gray-700"
+                }`}
+              onClick={handleChat}
             >
               <BiUpArrowAlt className="w-8 h-8 text-white" />
             </div>
@@ -214,6 +487,11 @@ export default function Dashboard({
                   placeholder="Message Smart Actions"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleChat();
+                    }
+                  }}
                   className="flex-1 md:p-2 md:mt-0 bg-transparent outline-none text-white md:ml-2 placeholder-gray-400"
                   style={{ fontFamily: "manrope" }}
                 />
@@ -221,9 +499,9 @@ export default function Dashboard({
 
               {/* Arrow Button */}
               <div
-                className={`md:w-12 w-10 flex cursor-pointer justify-center items-center px-2 py-2 rounded ml-3 transition-all ${
-                  message.trim() ? "bg-[#0000ff]" : "bg-gray-700"
-                }`}
+                className={`md:w-12 w-10 flex cursor-pointer justify-center items-center px-2 py-2 rounded ml-3 transition-all ${message.trim() ? "bg-[#0000ff]" : "bg-gray-700"
+                  }`}
+                onClick={handleChat}
               >
                 <BiUpArrowAlt className="w-8 h-8 text-white" />
               </div>
