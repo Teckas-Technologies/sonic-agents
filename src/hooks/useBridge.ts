@@ -50,6 +50,7 @@ export const useBridgeToken = () => {
                 sender,
                 recipient,
             });
+            console.log(txs)
 
             let txHash;
 
