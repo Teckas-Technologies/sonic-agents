@@ -9,6 +9,7 @@ import { usePrivy, useSolanaWallets } from "@privy-io/react-auth";
 import { BridgeData, useBridgeToken } from "@/hooks/useBridge";
 import { useChat } from "@/hooks/useChatHook";
 import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
 
 const MarkdownToJSX = dynamic(() => import("markdown-to-jsx"), { ssr: false });
 
@@ -123,6 +124,18 @@ export default function Dashboard({
   }
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const queryAgent = params.get("agent");
+      if (queryAgent) {
+        setActiveAgent(queryAgent);
+      } else {
+        setActiveAgent("bridgeAgent")
+      }
+    }
+  }, [agents]);
+
+  useEffect(() => {
     if (wallets.length > 0) {
       fetchHistory();
     }
@@ -132,15 +145,19 @@ export default function Dashboard({
     fetchSonicAgents();
   }, [])
 
-  useEffect(() => {
-    if (agents.length > 0) {
-      setActiveAgent(agents[0]);
-    }
-  }, [agents])
+  // useEffect(() => {
+  //   if (agents.length > 0) {
+  //     setActiveAgent(agents[0]);
+  //   }
+  // }, [agents])
 
   const fetchHistory = async () => {
     const history = await fetchChatHistory(activeAgent || "bridgeAgent");
-    setMessages(history?.threads);
+    const filteredMessages = history?.threads?.filter(
+      (msg: Message) => msg.message.trim() !== ""
+    );
+
+    setMessages(filteredMessages);
   }
 
   const fetchSonicAgents = async () => {
@@ -157,6 +174,10 @@ export default function Dashboard({
   const handleChat = async () => {
     if (!message.trim()) return;
     if (isLoading) {
+      return;
+    }
+
+    if (!wallets[0].address) {
       return;
     }
 

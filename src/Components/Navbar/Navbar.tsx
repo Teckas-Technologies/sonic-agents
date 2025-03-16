@@ -90,7 +90,7 @@ export default function Navbar({
       )}
 
       <nav
-        className={`fixed md:relative h-screen bg-black bg-opacity-90 text-white p-4 flex-col justify-between border-r border-gray-700 transition-all ${isCollapsed && !isMobileNavVisible ? "w-20" : "w-64"
+        className={`fixed md:relative h-screen bg-black bg-opacity-90 text-white p-4 flex-col justify-between border-r border-gray-700 transition-all ${isCollapsed && !isMobileNavVisible ? "w-20" : "w-[14rem] md:w-[15rem] lg:w-[16rem]"
           } ${isMobileNavVisible ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0 z-50`}
       >
