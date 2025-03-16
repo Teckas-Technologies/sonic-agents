@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { FaRobot, FaLaptopCode } from "react-icons/fa6";
 import { MdLink } from "react-icons/md";
 import { HiMiniArrowUpRight } from "react-icons/hi2";
+import { usePrivy, useSolanaWallets } from "@privy-io/react-auth";
+import { useBridgeToken } from "@/hooks/useBridge";
 
 export default function Navbar({
   isCollapsed,
@@ -18,6 +20,46 @@ export default function Navbar({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { connectWallet, user, ready } = usePrivy();
+  const [isConnected, setIsConnected] = useState(false);
+
+  const { wallets } = useSolanaWallets();
+
+  const checkConnection = async () => {
+    setIsConnected(await wallets[0].isConnected())
+  }
+
+  const checkLinked = async () => {
+    if (wallets.length === 0) {
+      return;
+    }
+    const linked = await wallets[0].linked;
+    console.log("Linked: ", linked);
+    if (!linked) {
+      const res = await wallets[0].loginOrLink();
+      console.log("RES:", res)
+    }
+  }
+
+  useEffect(() => {
+    if (wallets.length > 0) {
+      checkConnection();
+    }
+  }, [wallets.length])
+
+  useEffect(() => {
+    if (wallets.length > 0) {
+      checkLinked()
+    }
+  }, [wallets.length])
+
+  const handleDisconnect = async () => {
+    if (wallets.length === 0) {
+      return;
+    }
+    setIsConnected(false);
+    await wallets[0].disconnect();
+  }
 
   // Determine active tab based on current route
   const getActiveTab = () => {
@@ -44,14 +86,13 @@ export default function Navbar({
           className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-sm z-30 md:hidden"
           onClick={onMobileNavToggle}
         />
+
       )}
 
       <nav
-        className={`fixed md:relative h-screen bg-black bg-opacity-90 text-white p-4 flex-col justify-between border-r border-gray-700 transition-all ${
-          isCollapsed && !isMobileNavVisible ? "w-20" : "w-64"
-        } ${
-          isMobileNavVisible ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 z-50`}
+        className={`fixed md:relative h-screen bg-black bg-opacity-90 text-white p-4 flex-col justify-between border-r border-gray-700 transition-all ${isCollapsed && !isMobileNavVisible ? "w-20" : "w-[14rem] md:w-[15rem] lg:w-[16rem]"
+          } ${isMobileNavVisible ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0 z-50`}
       >
         <div className="flex flex-col h-full">
           {/* Logo and Menu Items */}
@@ -73,9 +114,8 @@ export default function Navbar({
             <ul className="mt-6 space-y-2" style={{ fontFamily: "manrope" }}>
               <li>
                 <button
-                  className={`flex cursor-pointer items-center w-full gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    active === "Chat" ? "bg-gray-700" : "hover:bg-gray-800"
-                  }`}
+                  className={`flex cursor-pointer items-center w-full gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${active === "Chat" ? "bg-gray-700" : "hover:bg-gray-800"
+                    }`}
                   onClick={() => handleNavigation("Chat")}
                 >
                   <FaLaptopCode className="w-8 h-8" />
@@ -86,11 +126,10 @@ export default function Navbar({
               </li>
               <li>
                 <button
-                  className={`flex cursor-pointer items-center w-full px-3 gap-2 py-2 rounded-lg text-sm transition-colors ${
-                    active === "Browse Agents"
-                      ? "bg-gray-700"
-                      : "hover:bg-gray-800"
-                  }`}
+                  className={`flex cursor-pointer items-center w-full px-3 gap-2 py-2 rounded-lg text-sm transition-colors ${active === "Browse Agents"
+                    ? "bg-gray-700"
+                    : "hover:bg-gray-800"
+                    }`}
                   onClick={() => handleNavigation("Browse Agents")}
                 >
                   <FaRobot className="w-8 h-8" />
@@ -128,10 +167,11 @@ export default function Navbar({
             <button
               className="w-full py-2 rounded-lg cursor-pointer flex justify-center items-center gap-2 text-sm bg-white text-black font-bold hover:bg-gray-200 transition"
               style={{ fontFamily: "manrope" }}
+              onClick={() => !isConnected ? connectWallet() : handleDisconnect()}
             >
               <MdLink className="w-8 h-8" />
               {(!isCollapsed || isMobileNavVisible) && (
-                <span>Connect Wallet</span>
+                !isConnected ? <span>Connect Wallet</span> : <span>Disconnect</span>
               )}
             </button>
           </div>

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { warpCore } from "@/lib/warpcore";
 import { WarpTypedTransaction } from '@hyperlane-xyz/sdk';
 
-interface BridgeData {
+export interface BridgeData {
     fromChain: "solanamainnet" | "sonicsvm";
     amount: string;
     recipientAddress?: string;
@@ -35,6 +35,10 @@ export const useBridgeToken = () => {
         const sender = solanaAddress;
         const parsedAmt = parseFloat(data.amount) * 10 ** 9; // 0.02 * 10 ** 9
         const originTokenAmount = originToken.amount(parsedAmt.toString());
+
+        // console.log("Recipient:", recipient)
+        // console.log("Origin Token:", originToken)
+        // console.log("Amount:", originTokenAmount)
 
         setLoading(true);
         setError(null);
