@@ -1,18 +1,18 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState, useEffect } from "react";
 import Dashboard from "@/Components/Dashboard/Dashboard";
 import Navbar from "@/Components/Navbar/Navbar";
+import Agents from "@/Components/BrowseAgents/Agents";
 
-export default function Home() {
-  // Load the initial state from localStorage
+const Page = () => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
       return JSON.parse(localStorage.getItem("isCollapsed") || "false");
     }
     return false;
   });
-  
 
   const [isMobileNavVisible, setIsMobileNavVisible] = useState(false);
 
@@ -24,21 +24,22 @@ export default function Home() {
   }, [isCollapsed]);
 
   return (
-    <div className="h-screen flex overflow-hidden bg-white">
+    <div className="h-screen flex">
       {/* Sidebar Navbar */}
-      <Navbar 
-        isCollapsed={isCollapsed} 
-        isMobileNavVisible={isMobileNavVisible} 
+      <Navbar
+        isCollapsed={isCollapsed}
+        isMobileNavVisible={isMobileNavVisible}
         onMobileNavToggle={() => setIsMobileNavVisible(!isMobileNavVisible)}
       />
-
-      {/* Main Dashboard */}
-      <div className="flex-1 h-screen overflow-auto">
-        <Dashboard 
-          onToggle={() => setIsCollapsed((prev) => !prev)} 
+      <div className="flex-1 h-full">
+        <Agents
+          onToggle={() => setIsCollapsed((prev) => !prev)}
           onMobileNavToggle={() => setIsMobileNavVisible(!isMobileNavVisible)}
+          isMobileNavVisible={isMobileNavVisible}
         />
       </div>
     </div>
   );
-}
+};
+
+export default Page;
