@@ -13,6 +13,8 @@
     "@hyperlane-xyz/sdk": "^8.9.0",
     "@privy-io/react-auth": "^2.6.2",
     "@solana/web3.js": "^1.98.0",
+    "bn.js": "^5.2.1",
+    "bs58": "^6.0.0",
     "lucide-react": "^0.479.0",
     "markdown-to-jsx": "^7.7.4",
     "next": "15.2.2",
@@ -25,6 +27,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/bn.js": "^5.1.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

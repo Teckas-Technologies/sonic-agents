@@ -3,14 +3,10 @@
 import { usePrivy } from "@privy-io/react-auth";
 import { useSolanaWallets } from '@privy-io/react-auth/solana';
 import { useEffect, useState } from "react";
-import { WarpCore, HyperlaneContractsMap, MultiProvider, MultiProtocolProvider, HyperlaneCore, Token, TokenAmount, TokenStandard, WarpTypedTransaction } from "@hyperlane-xyz/sdk";
 import { Connection, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
-
-const solanaMailbox = "E588QtVUvresuXq2KoNEwAmoifCzYGpRBdHByN9KQMbi"; // 🔥 Required for Solana messaging
-const solanaCollateralAddress = "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"; // 🔥 Required for Sealevel hyp tokens
-
-const solanaRpcUrl ="https://solana-mainnet.g.alchemy.com/v2/H-LqusqbIhSz4K9KE8vQ9i8C4PQPGD-K" // "https://api.mainnet-beta.solana.com";
-const sonicRpcUrl = "https://sonic.helius-rpc.com";
+import { useSwapToken } from "@/hooks/useSwap";
+import { useApiSwapToken } from "@/hooks/useApiSwap";
+import { useSegaApi } from "@/hooks/useSega";
 
 export default function TestPage() {
     const { connectWallet, user, ready } = usePrivy();
@@ -57,108 +53,47 @@ export default function TestPage() {
         await wallets[0].disconnect();
     }
 
-    const bridgeToken = async () => {
-        if (!wallets.length) return alert("No wallet connected!");
+    // const { loading, error, swapToken } = useSwapToken();
 
-        const solanaWallet = wallets[0]; // Phantom wallet from Privy
-        const solanaAddress = solanaWallet.address;
-        const recipientEvmAddress = "0xRecipientEvmAddressOnSonic"; // Replace with the correct EVM address
+    // const handleSwap = async () => {
+    //     const swapResult = await swapToken({
+    //         authority: "9ynCweFM8pCLteyTUanyGnzUAGp4zP6bK5wLD6Ktiz6P",
+    //         inputMint: "So11111111111111111111111111111111111111112",
+    //         outputMint: "mrujEYaN1oyQXDHeYNxBYpxWKVkQ2XsGxfznpifu4aL",
+    //         inputTokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    //         outputTokenProgram: "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+    //         inputVault: "HzfTFD9wzZ9XEzeLNGuvd3nzYCCJtc94orxzbJZr4cK5",
+    //         outputVault: "Hh3tctzki4Xn5MddEGPZVmAXaVsswrPVUmHmBWw6iTXu",
+    //         ammConfig: "Bkxq43SaKWjCL7tqWKoiX9hTaCHKBw8XnLwzDa6Ckork",
+    //         observationState: "s7EhZxBxVexNRrac4UKWbp7nDXa6TajkE456T5uoiQ1", // TODO
+    //         poolState: "DgMweMfMbmPFChTuAvTf4nriQDWpf9XX3g66kod9nsR4",
+    //         inputTokenAccount: wallets[0].address,
+    //         outputTokenAccount: "FwZjhNohnECbt6s9nJcmuPo8hGyQVTGmqz8m16D83Pi9",
+    //         amountIn: "0.0001", // 1.5 Tokens
+    //         minAmountOut: "0.0001", // Minimum expected output (slippage protection)
+    //     });
 
-        const connection = new Connection(solanaRpcUrl);
-        const multiProvider = new MultiProtocolProvider<{ mailbox?: string }>({
-            solana: {
-                name: "solana",
-                chainId: 101,
-                domainId: 101, // Solana domain ID
-                protocol: "sealevel" as 'ethereum' | 'sealevel' | 'cosmos' | any,
-                rpcUrls: [{ http: solanaRpcUrl }],
-                blockExplorers: [
-                    // {
-                    //     name: "Solana Explorer",
-                    //     url: "https://explorer.solana.com",
-                    //     // apiUrl: "https://api.mainnet-beta.solana.com",
-                    // }
-                ],
-                nativeToken: {
-                    name: "Solana",
-                    symbol: "SOL",
-                    decimals: 9,
-                },
-                mailbox: solanaMailbox
-            },
-            sonic: {
-                name: "sonic",
-                chainId: 507150715,
-                domainId: 507150715,
-                protocol: "ethereum" as 'ethereum' | 'sealevel' | 'cosmos' | any,
-                rpcUrls: [{ http: sonicRpcUrl }],
-                blockExplorers: [
-                    {
-                        name: "Sonic Explorer",
-                        url: "https://explorer.sonic.game",
-                        apiUrl: "https://api.sonic-explorer.com",
-                    }
-                ],
-                nativeToken: {
-                    name: "Sonic SVM (SONIC)",
-                    symbol: "SONIC",
-                    decimals: 9,
-                },
-            },
-        });
+    //     if (swapResult?.success) {
+    //         console.log("Swap successful:", swapResult.txHash);
+    //     } else {
+    //         console.error("Swap failed:", swapResult?.message);
+    //     }
+    // };
 
-        const warpCore = new WarpCore(multiProvider, []);
+    // const { swapToken } = useApiSwapToken();
 
-        const originToken = warpCore.tokens.find(
-            (token) =>
-              token.chainName === "eclipsemainnet" && token.symbol === "tETH",
-          );
-        console.log("TOKENS:", originToken)
+    // const handleSwap = async () => {
+    //     const res = await swapToken("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAKEbA5DfRWZQMedIdVxXB+NekXoot6r9fK+6VX4mRt3ZeZ/LFrY26pK/mE5d9co+zTVkuBDcdhproJuVS47qfYD+/p4gsBeexMrErH9InLeWq5eORFQlhPYDGQt7XkWche5rxhkvMiO/eykJF4NyuiqjC3l6X9e+Q9ve2IoYpJu3iD/ICTSB1F85P5DINlWoe3yL0zc7GH3kI4ncoDlYPI1Mz3/X2raBR5UJ5ZWyJpJnzNl+D1ARpj/r2hCGHP8qaQYAzWF3yT8J5tsRXvosDkSZRvOyt3AfQ5vv80TYNhz4XqAwZGb+UhFzL/7K26csOb57yM5bvF9xJrLEObOkAAAACMlyWPTiSJ8bs9ECkUjg2DC1oTmdr/EIQEjnvY2+n4WQt9/O3wuh41LPq1RBt0YNsJDYZVa++qPbvTRVxQ821ZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG3fbh7nWP3hhCXbzkbM3athr8TYO5DSf+vfko2KGL/AabiFf+q4GE+2h/Y0YYwDXaxDncGus7VZig8AAAAAABBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkGkiDDrfssXMtGek07Vp/PI7aK3v1jryDJrHgSRsgMWIVpIpvle23lqOp06AbcAU12NwnVo24zPmiCOfeu/EpUn9f4MxEnXOhHC8iWQsDmhqCkTFZujBDF8dhuWOZ3XYVPFmuJzds3bEJwEtR+A9MadsuLuL11QsGBEXncuSmvWggHAAUCIKEHAAcACQOghgEAAAAAAAgGAAEACQoLAQEIBgACAAwKDQEBCgIAAgwCAAAAoIYBAAAAAAANAQIBEQ4NAA8QAwIBBAUNCwwJBhiPvlraxB4z3qCGAQAAAAAAyDTmAgAAAAANAwIAAAEJAA==");
+    //     console.log("RES:", res)
+    // }
 
-        try {
-            const solanaToken = new Token({
-                name: "Solana", // ✅ Required property
-                symbol: "SOL",
-                decimals: 9,
-                chainName: "solana",
-                addressOrDenom: "So11111111111111111111111111111111111111112" , // "So11111111111111111111111111111111111111112", // Native SOL
-                standard: TokenStandard.SealevelHypNative // ✅ Correct TokenStandard
-            });
+    const { fetchSwapRawData } = useSegaApi(); // inputMint=
 
-            // ✅ Correctly instantiate TokenAmount instead of using a raw object
-            const originTokenAmount = new TokenAmount(0.1 * 10 ** 9, solanaToken);
+    const handleSwap = async () => {
+        const res = await fetchSwapRawData({ inputMint: "So11111111111111111111111111111111111111112", outputMint: "mrujEYaN1oyQXDHeYNxBYpxWKVkQ2XsGxfznpifu4aL", amount: "10000" })
+        console.log("RES:", res)
+    }
 
-            const txs: WarpTypedTransaction[] = await warpCore.getTransferRemoteTxs({
-                originTokenAmount: originTokenAmount,
-                destination: "sonic",
-                sender: solanaAddress,
-                recipient: solanaAddress,
-            });
-
-            console.log("Transactions to Sign:", txs);
-
-            for (const tx of txs) {
-                // ✅ Ensure the transaction is a valid Solana transaction before adding it
-                if (tx.transaction instanceof TransactionInstruction || tx.transaction instanceof Transaction) {
-                    const solanaTransaction = new Transaction().add(tx.transaction);
-                    solanaTransaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-                    solanaTransaction.feePayer = new PublicKey(solanaAddress);
-
-                    // ✅ Sign & Send Transaction using Phantom Wallet
-                    const signedTx = await solanaWallet.signTransaction(solanaTransaction);
-                    const txId = await connection.sendRawTransaction(signedTx.serialize());
-                    console.log(`Transaction Sent: https://explorer.solana.com/tx/${txId}`);
-                } else {
-                    console.warn("Skipping non-Solana transaction:", tx.transaction);
-                }
-            }
-
-            alert("Token bridging to Sonic initiated!");
-        } catch (error) {
-            console.error("Bridging failed:", error);
-            alert("Failed to bridge tokens. Check console.");
-        }
-    };
 
     return (
         <div className="w-full h-full bg-red-50">
@@ -172,8 +107,8 @@ export default function TestPage() {
             </div>
 
             <div className="main w-full h-full p-6">
-                <button onClick={bridgeToken} className="px-6 py-2 rounded-md bg-blue-500 text-white">
-                    Bridge 0.1 SOL to Sonic
+                <button onClick={handleSwap} className="px-6 py-2 rounded-md bg-blue-500 text-white">
+                    Swap 0.1 SOL to Sonic
                 </button>
             </div>
         </div>

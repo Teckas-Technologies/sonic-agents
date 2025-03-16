@@ -11,6 +11,9 @@ import { BridgeData, useBridgeToken } from "@/hooks/useBridge";
 import { useChat } from "@/hooks/useChatHook";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
+import { useApiSwapToken } from "@/hooks/useApiSwap";
+import { useSegaApi } from "@/hooks/useSega";
+import { usePools } from "@/hooks/usePools";
 
 const MarkdownToJSX = dynamic(() => import("markdown-to-jsx"), { ssr: false });
 
@@ -71,6 +74,9 @@ export default function Dashboard({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { connectWallet, user, ready } = usePrivy();
   const { bridgeToken } = useBridgeToken();
+  const { fetchPools } = usePools();
+  const { fetchSwapRawData } = useSegaApi();
+  const { swapToken } = useApiSwapToken();
   const { chat, fetchChatHistory, clearHistory, fetchAgents } = useChat();
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -78,6 +84,7 @@ export default function Dashboard({
   const [messages, setMessages] = useState<Message[]>([]);
   const [agents, setAgents] = useState([]);
   const [isBridging, setIsBridging] = useState(false);
+  const [isSwaping, setIsSwaping] = useState(false);
 
   const { wallets } = useSolanaWallets();
 
@@ -172,6 +179,21 @@ export default function Dashboard({
     setMessages([])
   }
 
+  const updateLastAiMessage = (newMessage: string) => {
+    setMessages((prev) => {
+      const updatedMessages = [...prev];
+      const lastIndex = updatedMessages.length - 1;
+
+      if (updatedMessages[lastIndex]?.role === "ai") {
+        updatedMessages[lastIndex] = { role: "ai", message: newMessage };
+      } else {
+        updatedMessages.push({ role: "ai", message: newMessage });
+      }
+
+      return updatedMessages;
+    });
+  };
+
   // Chat functions & actions
   const handleChat = async () => {
     if (!message.trim()) return;
@@ -232,9 +254,45 @@ export default function Dashboard({
               }
 
             } else if (toolMessage?.type === "swap") {
-              // TODO swap integration
-              setMessages((prev) => [...prev, { role: "ai", message: "Your swap was started ....!" }]);
-              return;
+              const { inputMint, outputMint, amount, poolId } = toolMessage;
+
+              if (!inputMint || !outputMint || !amount || !poolId) {
+                setMessages((prev) => [...prev, { role: "ai", message: `Input fields are missing...` }]);
+                return;
+              }
+
+              setIsSwaping(true);
+
+              setMessages((prev) => [...prev, { role: "ai", message: `Fetching pools...` }]);
+              const poolRes = await fetchPools([poolId]);
+              console.log("pool info:", poolRes)
+
+              const decimal = poolRes?.data[0]?.mintA?.decimals;
+
+              updateLastAiMessage(`Fetching swap raw data...`);
+              const rawTransaction = await fetchSwapRawData({ inputMint: inputMint, outputMint: outputMint, amount: amount?.toString(), inputDecimal: decimal });
+              console.log("Raw:", rawTransaction)
+
+              if (!rawTransaction) {
+                setMessages((prev) => [...prev, { role: "ai", message: `Please give valid inputs...` }]);
+                return;
+              }
+
+              updateLastAiMessage(`Swap is in progress...`);
+              const swapRes = await swapToken(rawTransaction?.data[0]?.transaction);
+              console.log("RES: ", swapRes);
+
+              if (swapRes?.success) {
+                setMessages((prev) => [...prev, { role: "ai", message: "Your recent swap was successful!", txHash: swapRes?.txHash }]);
+                console.log("SUCCESS:", swapRes.message);
+                setIsSwaping(false);
+                return;
+              } else {
+                setMessages((prev) => [...prev, { role: "ai", message: "Your recent swap failed!" }]);
+                console.log("ERROR:", swapRes?.message);
+                setIsSwaping(false);
+                return;
+              }
             }
           }
         }
@@ -535,8 +593,8 @@ export default function Dashboard({
               {/* Send Button with Better Positioning */}
               <button
                 className={`ml-3 p-2 rounded flex items-center justify-center transition-all ${message.trim()
-                    ? "bg-[#0000ff] hover:bg-blue-700"
-                    : "bg-gray-700"
+                  ? "bg-[#0000ff] hover:bg-blue-700"
+                  : "bg-gray-700"
                   }`}
                 onClick={handleChat}
                 disabled={!message.trim()}
