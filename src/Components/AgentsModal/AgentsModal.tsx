@@ -5,10 +5,12 @@ export default function AgentsModal({
   isOpen,
   onClose,
   setActiveAgent,
+  sonicAgents
 }: {
   isOpen: boolean;
   onClose: () => void;
   setActiveAgent: (name: string) => void;
+  sonicAgents: string[]
 }) {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -78,20 +80,25 @@ export default function AgentsModal({
 
           {/* Agents List */}
           <div className="mt-4 space-y-3 max-h-60 overflow-y-auto" style={{ fontFamily: "manrope" }}>
-            {agents.map((agent, index) => (
+            {sonicAgents?.length > 0 && sonicAgents.map((agent, index) => (
               <div
                 key={index}
                 className="p-3 bg-[#0c1a27] rounded-md cursor-pointer hover:bg-gray-700 transition-all"
                 onClick={() => {
-                  setActiveAgent(agent.name);
+                  setActiveAgent(agent);
                   onClose(); // Close modal after selection
                 }}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <img src="images/sonic-logo.png" className="h-[30px] w-[30px] rounded-full" />
-                    <h3 className="font-semibold text-sm">
-                      {agent.name.length > 25 ? agent.name.slice(0, 25) + "..." : agent.name}
+                    <h3 className="font-semibold text-sm truncate-1-lines">
+                      {/* {agent.name.length > 25 ? agent.name.slice(0, 25) + "..." : agent.name} */}
+                      {agent === "bridgeAgent" ?
+                        "Bridge Assistant" :
+                        agent === "swapAgent" ?
+                          "Swap Assistant" :
+                          "Liquidity Assistant"}
                     </h3>
                   </div>
                   <IoMdInformationCircleOutline className="w-5 h-5 text-gray-400" />
@@ -99,7 +106,11 @@ export default function AgentsModal({
 
                 {/* Description */}
                 <p className="text-xs text-gray-400 mt-1">
-                  {agent.description.length > 55 ? agent.description.slice(0, 55) + "..." : agent.description}
+                  {agent === "bridgeAgent" ?
+                    "Assistant for helping users to bridge tokens between Solana & Sonic SVM chains." :
+                    agent === "swapAgent" ?
+                      "Assistant for helping users to swap tokens between Solana & Sonic SVM chains." :
+                      "Assistant for helping users to add liquidity to pool in Solana & Sonic SVM chains."}
                 </p>
               </div>
             ))}
