@@ -1,14 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Dashboard from "@/Components/Dashboard/Dashboard";
 import Navbar from "@/Components/Navbar/Navbar";
 import Agents from "@/Components/BrowseAgents/Agents";
 
 const Page = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
+    return JSON.parse(localStorage.getItem("isCollapsed") || "false");
+  });
+
   const [isMobileNavVisible, setIsMobileNavVisible] = useState(false);
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("isCollapsed", JSON.stringify(isCollapsed));
+  }, [isCollapsed]);
 
   return (
     <div className="h-screen flex">

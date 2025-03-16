@@ -1,12 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Dashboard from "@/Components/Dashboard/Dashboard";
 import Navbar from "@/Components/Navbar/Navbar";
 
 export default function Home() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  // Load the initial state from localStorage
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
+    return JSON.parse(localStorage.getItem("isCollapsed") || "false");
+  });
+  
+
   const [isMobileNavVisible, setIsMobileNavVisible] = useState(false);
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("isCollapsed", JSON.stringify(isCollapsed));
+  }, [isCollapsed]);
 
   return (
     <div className="h-screen flex overflow-hidden bg-white">

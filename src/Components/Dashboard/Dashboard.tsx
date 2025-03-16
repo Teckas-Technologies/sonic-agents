@@ -5,6 +5,7 @@ import { BiUpArrowAlt } from "react-icons/bi";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 import { FaSearch } from "react-icons/fa";
+import AgentsModal from "../AgentsModal/AgentsModal";
 
 const agents = [
   {
@@ -39,19 +40,19 @@ export default function Dashboard({
   const [search, setSearch] = useState("");
   const [message, setMessage] = useState("");
   const [activeAgent, setActiveAgent] = useState<string | null>(null);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
-    <div className="flex flex-col items-center items-center h-screen bg-black text-white">
-      {/* Top Bar */}
-      {/* Top Bar */}
+    <div className="flex flex-col items-center h-screen bg-black text-white">
       <div
-        className="bg-gray-900 p-4 flex items-center gap-5 w-full"
+        className="bg-gray-900 p-4 flex items-center md:gap-5 gap-3 w-full"
         style={{ fontFamily: "orbitron" }}
       >
         <button
-          onClick={() => {
-            onToggle();
-            onMobileNavToggle();
+           onClick={() => {
+            onToggle(); // Always toggle collapse state
+            if (window.innerWidth < 768) {
+              onMobileNavToggle(); // Only toggle mobile nav visibility on mobile screens
+            }
           }}
           className="focus:outline-none"
         >
@@ -67,7 +68,7 @@ export default function Dashboard({
         <div className="text-white text-xs">VEJAS6QK0U1BTPQK</div>
       </div>
 
-      <div className="flex md:flex-1 h-[400px] md:h-0 overflow-hidden">
+      <div className="flex justify-center items-centerm-4 md:flex-1 h-[550px] mt-[130px] md:mt-0 md:h-0 overflow-hidden">
         {/* Sidebar */}
         <div className="hidden md:flex flex-col xl:w-[300px] xxl:w-[400px] bg-black p-4 m-4 rounded-lg border border-gray-700 overflow-hidden">
           {/* Header + Input */}
@@ -143,7 +144,7 @@ export default function Dashboard({
               <div className="flex justify-center items-center">
                 <img
                   src="images/sonic-logo.png"
-                  className="md:h-[100px] h-[30px]"
+                  className="md:h-[100px] h-[50px]"
                 />
               </div>
               <h2
@@ -153,7 +154,7 @@ export default function Dashboard({
                 Execute Transactions with AI
               </h2>
               <button
-                className="mt-4 bg-white text-black md:px-7 md:py-2 px-4 py-1 rounded font-semibold"
+                className="mt-4 bg-white text-black md:px-7 md:py-2 px-3 md:text-sm text-xs py-1 rounded font-semibold"
                 style={{ fontFamily: "manrope" }}
               >
                 Connect
@@ -194,39 +195,53 @@ export default function Dashboard({
 
           {/*Mobile -------------------*/}
           <div className="flex flex-col gap-3 py-4 px-3 border border-gray-700 rounded-lg md:m-4 mt-3 md:hidden">
-            {/* Input Container */}
-            <span
-              className="px-3 py-1 bg-[#fbb042] rounded text-black md:text-sm text-[8px] font-bold "
-              style={{ fontFamily: "orbitron" }}
-            >
-              {activeAgent ? activeAgent.toUpperCase() : "SONIC ASSISTANT"}
-            </span>
-            <div className="flex flex-row">
-              <div className="flex-1 bg-gray-900 rounded flex md:flex-row flex-col md:items-center items-start border border-gray-700 px-2 md:py-3 py-[15px]">
-                <span
-                  className="px-3 py-1 bg-[#fbb042] hidden md:block rounded text-black md:text-sm text-[8px] font-bold"
-                  style={{ fontFamily: "orbitron" }}
-                >
-                  {activeAgent ? activeAgent.toUpperCase() : "SONIC ASSISTANT"}
-                </span>
-                <input
-                  type="text"
-                  placeholder="Message Smart Actions"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="flex-1 md:p-2 md:mt-0 bg-transparent outline-none text-white md:ml-2 placeholder-gray-400"
-                  style={{ fontFamily: "manrope" }}
-                />
-              </div>
-
-              {/* Arrow Button */}
-              <div
-                className={`md:w-12 w-10 flex cursor-pointer justify-center items-center px-2 py-2 rounded ml-3 transition-all ${
-                  message.trim() ? "bg-[#0000ff]" : "bg-gray-700"
-                }`}
+            <div className="flex flex-row items-center justify-between">
+              {/* Active Agent Name */}
+              <span
+                className="px-3 py-1 bg-[#fbb042] rounded text-black text-xs md:text-sm font-bold"
+                style={{ fontFamily: "orbitron" }}
               >
-                <BiUpArrowAlt className="w-8 h-8 text-white" />
-              </div>
+                {activeAgent ? activeAgent.toUpperCase() : "SONIC ASSISTANT"}
+              </span>
+
+              {/* Agents Button */}
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="px-4 py-1 bg-gray-700 hover:bg-gray-600 text-white text-sm font-semibold rounded transition-all duration-200"
+              >
+                Agents
+              </button>
+
+              {/* Agents Modal */}
+              <AgentsModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                setActiveAgent={setActiveAgent}
+              />
+            </div>
+
+            {/* Input Box & Send Button */}
+            <div className="flex flex-row items-center bg-gray-900 rounded border border-gray-700 px-3 py-2">
+              <input
+                type="text"
+                placeholder="Message Smart Actions..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="flex-1 bg-transparent outline-none text-white text-sm placeholder-gray-400 p-2"
+                style={{ fontFamily: "manrope" }}
+              />
+
+              {/* Send Button with Better Positioning */}
+              <button
+                className={`ml-3 p-2 rounded flex items-center justify-center transition-all ${
+                  message.trim()
+                    ? "bg-[#0000ff] hover:bg-blue-700"
+                    : "bg-gray-700"
+                }`}
+                disabled={!message.trim()}
+              >
+                <BiUpArrowAlt className="w-6 h-6 text-white" />
+              </button>
             </div>
           </div>
         </div>

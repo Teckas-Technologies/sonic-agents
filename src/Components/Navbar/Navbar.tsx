@@ -41,20 +41,18 @@ export default function Navbar({
       {/* Overlay for mobile */}
       {isMobileNavVisible && (
         <div
-        className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-sm z-30 md:hidden"
-        onClick={onMobileNavToggle}
-      />
-      
+          className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-sm z-30 md:hidden"
+          onClick={onMobileNavToggle}
+        />
       )}
 
-<nav
-  className={`fixed md:relative h-screen bg-black bg-opacity-90 text-white p-4 flex-col justify-between border-r border-gray-700 transition-all ${
-    isCollapsed && !isMobileNavVisible ? "w-20" : "w-64"
-  } ${
-    isMobileNavVisible ? "translate-x-0" : "-translate-x-full"
-  } md:translate-x-0 z-50`}
->
-
+      <nav
+        className={`fixed md:relative h-screen bg-black bg-opacity-90 text-white p-4 flex-col justify-between border-r border-gray-700 transition-all ${
+          isCollapsed && !isMobileNavVisible ? "w-20" : "w-64"
+        } ${
+          isMobileNavVisible ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0 z-50`}
+      >
         <div className="flex flex-col h-full">
           {/* Logo and Menu Items */}
           <div>
@@ -97,7 +95,9 @@ export default function Navbar({
                 >
                   <FaRobot className="w-8 h-8" />
                   {(!isCollapsed || isMobileNavVisible) && (
-                    <span className="text-base font-semibold">Browse Agents</span>
+                    <span className="text-base font-semibold">
+                      Browse Agents
+                    </span>
                   )}
                 </button>
               </li>
