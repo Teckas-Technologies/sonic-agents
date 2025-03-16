@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import InlineSVG from "react-inlinesvg";
 import "./Agents.css";
+import { FaSearch } from "react-icons/fa";
 import { MdKeyboardArrowRight, MdKeyboardArrowDown } from "react-icons/md";
 import { useChat } from "@/hooks/useChatHook";
 import { useRouter } from "next/navigation";
@@ -94,12 +95,25 @@ const Agents = ({
 
   return (
     <div className="flex flex-col h-screen bg-black text-white overflow-hidden">
-      {/* Header */}
+      {isMobileNavVisible && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-sm z-30 md:hidden"
+          onClick={onMobileNavToggle}
+        />
+      )}
       <div
-        className="bg-gray-900 p-4 flex items-center gap-5 w-full"
+        className="bg-gray-900 p-4 flex items-center md:gap-5 gap-3 w-full"
         style={{ fontFamily: "orbitron" }}
       >
-        <button onClick={onToggle} className="focus:outline-none">
+        <button
+          onClick={() => {
+            onToggle(); // Always toggle collapse state
+            if (window.innerWidth < 768) {
+              onMobileNavToggle(); // Only toggle mobile nav visibility on mobile screens
+            }
+          }}
+          className="focus:outline-none"
+        >
           <InlineSVG
             src="icons/Toggle.svg"
             className="w-5 h-5 cursor-pointer"
@@ -168,11 +182,13 @@ const Agents = ({
         {/* Main Content - Scrollable */}
         <div className="md:w-3/4 w-full p-6 overflow-y-auto h-screen">
           {/* Search Bar */}
-          <div className="mb-6 flex justify-start">
+          <div className="mb-6 flex justify-start relative">
+            <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search"
-              className="w-full md:w-1/2 p-3 bg-transparent text-white border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="w-full md:w-1/2 p-3 pl-10 bg-transparent text-white border border-gray-500 rounded-lg"
+              style={{ outline: "none", boxShadow: "none" }}
             />
           </div>
 

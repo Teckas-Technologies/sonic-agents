@@ -94,7 +94,6 @@ export default function Navbar({
           } ${isMobileNavVisible ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0 z-50`}
       >
-
         <div className="flex flex-col h-full">
           {/* Logo and Menu Items */}
           <div>
@@ -135,7 +134,9 @@ export default function Navbar({
                 >
                   <FaRobot className="w-8 h-8" />
                   {(!isCollapsed || isMobileNavVisible) && (
-                    <span className="text-base font-semibold">Browse Agents</span>
+                    <span className="text-base font-semibold">
+                      Browse Agents
+                    </span>
                   )}
                 </button>
               </li>
