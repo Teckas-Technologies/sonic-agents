@@ -219,7 +219,9 @@ const Agents = ({
                           "Bridge Assistant" :
                           agent === "swapAgent" ?
                             "Swap Assistant" :
-                            "Liquidity Assistant"}
+                            agent === "coinMarketCapAgent" ?
+                              "CoinMarketCap Assistant" :
+                              "Liquidity Assistant"}
                       </h5>
                     </div>
                     <button
@@ -233,7 +235,7 @@ const Agents = ({
 
                   {/* Description */}
                   <p
-                    className="text-sm text-gray-400 truncate-3-lines"
+                    className="text-sm text-gray-400 truncate-2-lines"
                     style={{
                       fontFamily: "manrope",
                       maxWidth: "calc(100% - 1rem)",
@@ -243,7 +245,9 @@ const Agents = ({
                       "Assistant for helping users to bridge tokens between Solana & Sonic SVM chains." :
                       agent === "swapAgent" ?
                         "Assistant for helping users to swap tokens between Solana & Sonic SVM chains." :
-                        "Assistant for helping users to add liquidity to pool in Solana & Sonic SVM chains."}
+                        agent === "coinMarketCapAgent" ?
+                          "Assistant for helping users to know the current market price of the tokens & all over the crypto activities in the world." :
+                          "Assistant for helping users to add liquidity to pool in Solana & Sonic SVM chains."}
                   </p>
 
                   {/* Author and Verification */}
