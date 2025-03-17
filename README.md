@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sonic Agents Protocol
 
-## Getting Started
+## Introduction
 
-First, run the development server:
+Sonic SVM AI Agents is a decentralized application (dApp) built on **Next.js** and **OpenAI Multi-Agent Systems**. It facilitates seamless blockchain interactions using **Natural Language Processing (NLP)**, enabling users to bridge tokens, swap assets, and track market performance effortlessly.
 
+[![Demo](https://img.shields.io/badge/Demo-Visit%20Demo-brightgreen)](https://sonic-agents-ui.vercel.app/)
+[![Deploy](https://img.shields.io/badge/Deploy-on%20Vercel-blue)](https://vercel.com/new/clone?repository-url=https://github.com/Teckas-Technologies/sonic-agents-ui)
+
+**Key Assistants:**
+
+1. **Bridge Assistant** – Enables cross-chain token bridging between **Solana** and **Sonic SVM** using natural language.
+2. **Swap Assistant** – Allows users to swap tokens within the **Sonic SVM chain** through conversational commands.
+3. **CoinMarketCap Assistant** – Provides real-time **market performance insights and token price updates**.
+
+Future assistants will include:
+- **Liquidity Assistant** – Adding liquidity to pools on Sonic SVM.
+- **Minting Assistant** – Minting tokens and NFTs.
+
+## Key Features
+
+- **Cross-Chain Token Bridging** – Securely transfer assets between **Solana and Sonic SVM**.
+- **Seamless Token Swaps** – Swap tokens within **Sonic SVM** effortlessly.
+- **Real-Time Market Data** – Get **live price updates** and **market trends**.
+- **AI-Powered Execution** – Execute blockchain operations using **natural language commands**.  
+
+
+## Setup & Installation
+
+### 1. Clone Repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/Teckas-Technologies/sonic-agents-ui
+cd sonic-agents-ui
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install Dependencies
+```bash
+pnpm install
+pnpm run dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deployment
+Follow these steps to deploy on **Vercel**:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Create an Account** – Sign up on **Vercel**.
+2. **Connect GitHub** – Import the repository.
+3. **Add Environment Variables** – Configure required keys.
+4. **Deploy** – Click the deploy button.
+5. **Access Application** – Open the deployed app.
 
-## Learn More
+## Future Roadmap
 
-To learn more about Next.js, take a look at the following resources:
+- **Liquidity Provisioning** – Add liquidity to pools on Sonic SVM.
+- **NFT & Token Minting** – Enable users to mint tokens and NFTs.
+- **Multi-Chain Expansion** – Support additional blockchain networks.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Contributors
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+[![Follow Us on Twitter](https://img.shields.io/badge/Follow-Sonic%20Agents%20Protocol-blue?style=social&logo=twitter)](https://x.com/Sonic_agents)   
+[![Organization](https://img.shields.io/badge/Powered%20By-Teckas%20Technologies-green)](https://www.teckastechnologies.com/)
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+MIT License © 2025 Sonic Agents Protocol
