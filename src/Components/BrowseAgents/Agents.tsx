@@ -287,7 +287,7 @@ const Agents = ({
             ))}
           </div>
           {!selectedCategories.includes("DeFi") && selectedCategories.length !== 0 && <div className="w-full flex flex-col items-center justify-center gap-3">
-            <p className="" style={{ fontFamily: "orbitron" }}>Agents will coming soon!</p>
+            <p className="" style={{ fontFamily: "orbitron" }}>Agents will come soon!</p>
             <div className="soon px-2 py-1 bg-[#fbb042] rounded text-black md:text-sm text-[8px] font-semibold"
               style={{ fontFamily: "orbitron" }}>
               SOON
