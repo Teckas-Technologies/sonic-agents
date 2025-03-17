@@ -150,15 +150,15 @@ export default function TestPage2() {
         const recipientPhantam = "FwZjhNohnECbt6s9nJcmuPo8hGyQVTGmqz8m16D83Pi9";  // Phantom
         const recipientBybit = "CruDRF9rQ4LjMgQkMSSPi1tFqJXAgdDi1BWqwWnhrKsv";   // Bybit
 
-        const res = await bridgeToken({ fromChain: fromChain, amount: amount, recipientAddress: recipientBybit });
+        // const res = await bridgeToken({ fromChain: fromChain, amount: amount, recipientAddress: recipientBybit });
 
-        console.log("RES: ", res);
+        // console.log("RES: ", res);
 
-        if (res?.success) {
-            console.log("SUCCESS:", res.message);
-        } else {
-            console.log("ERROR:", res?.message);
-        }
+        // if (res?.success) {
+        //     console.log("SUCCESS:", res.message);
+        // } else {
+        //     console.log("ERROR:", res?.message);
+        // }
 
     }
 

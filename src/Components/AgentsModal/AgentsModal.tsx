@@ -98,7 +98,9 @@ export default function AgentsModal({
                         "Bridge Assistant" :
                         agent === "swapAgent" ?
                           "Swap Assistant" :
-                          "Liquidity Assistant"}
+                          agent === "coinMarketCapAgent" ?
+                            "CoinMarketCap Assistant" :
+                            "Liquidity Assistant"}
                     </h3>
                   </div>
                   <IoMdInformationCircleOutline className="w-5 h-5 text-gray-400" />
@@ -110,7 +112,9 @@ export default function AgentsModal({
                     "Assistant for helping users to bridge tokens between Solana & Sonic SVM chains." :
                     agent === "swapAgent" ?
                       "Assistant for helping users to swap tokens between Solana & Sonic SVM chains." :
-                      "Assistant for helping users to add liquidity to pool in Solana & Sonic SVM chains."}
+                      agent === "coinMarketCapAgent" ?
+                        "Assistant for helping users to know the current market price of the tokens & all over the crypto activities in the world." :
+                        "Assistant for helping users to add liquidity to pool in Solana & Sonic SVM chains."}
                 </p>
               </div>
             ))}

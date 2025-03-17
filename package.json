@@ -12,6 +12,7 @@
     "@hyperlane-xyz/registry": "^10.15.0",
     "@hyperlane-xyz/sdk": "^8.9.0",
     "@privy-io/react-auth": "^2.6.2",
+    "@solana/spl-token": "^0.4.13",
     "@solana/web3.js": "^1.98.0",
     "bn.js": "^5.2.1",
     "bs58": "^6.0.0",

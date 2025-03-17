@@ -1,5 +1,5 @@
 import { useSolanaWallets } from '@privy-io/react-auth';
-import { Connection, Transaction, TransactionInstruction } from '@solana/web3.js';
+import { Connection, PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js';
 import { useState } from 'react';
 import { warpCore } from "@/lib/warpcore";
 import { WarpTypedTransaction } from '@hyperlane-xyz/sdk';
@@ -7,6 +7,7 @@ import { WarpTypedTransaction } from '@hyperlane-xyz/sdk';
 export interface BridgeData {
     fromChain: "solanamainnet" | "sonicsvm";
     amount: string;
+    tokenSymbol: string;
     recipientAddress?: string;
 }
 
@@ -21,6 +22,23 @@ export const useBridgeToken = () => {
     const solanaWallet = wallets[0];
     const solanaAddress = solanaWallet?.address;
 
+    const getTokenBalance = async (tokenMint: string, userAddress: string, rpcUrl: string) => {
+        try {
+            const connection = new Connection(rpcUrl);
+            const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+                new PublicKey(userAddress),
+                { mint: new PublicKey(tokenMint) }
+            );
+
+            if (tokenAccounts.value.length === 0) return 0; // No balance
+
+            return parseFloat(tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount);
+        } catch (error) {
+            console.error("Error fetching token balance:", error);
+            return 0;
+        }
+    };
+
     const bridgeToken = async (data: BridgeData) => {
         if (!solanaAddress) {
             console.log("Please connect your wallet.")
@@ -31,9 +49,19 @@ export const useBridgeToken = () => {
 
         const destination = data.fromChain === "solanamainnet" ? "sonicsvm" : "solanamainnet";
         const recipient = data?.recipientAddress ? data.recipientAddress : solanaAddress;
-        const originToken = data.fromChain === "solanamainnet" ? warpCore.tokens[1] : warpCore.tokens[0];
+        // const originToken = data.fromChain === "solanamainnet" ? warpCore.tokens[1] : warpCore.tokens[0];
+
+        const originToken = warpCore.tokens.find(
+            token => token.symbol === data.tokenSymbol && token.chainName === data.fromChain
+        );
+
+        if (!originToken) {
+            console.log(`Token ${data.tokenSymbol} not found for bridging from ${data.fromChain}.`);
+            return;
+        }
+
         const sender = solanaAddress;
-        const parsedAmt = parseFloat(data.amount) * 10 ** 9; // 0.02 * 10 ** 9
+        const parsedAmt = parseFloat(data.amount) * 10 ** originToken.decimals; // 0.02 * 10 ** 9
         const originTokenAmount = originToken.amount(parsedAmt.toString());
 
         console.log("Recipient:", recipient)
