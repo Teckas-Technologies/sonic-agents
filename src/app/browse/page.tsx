@@ -24,7 +24,7 @@ const Page = () => {
   }, [isCollapsed]);
 
   return (
-    <div className="h-screen flex">
+    <div className="relative h-screen flex">
       {/* Sidebar Navbar */}
       <Navbar
         isCollapsed={isCollapsed}
