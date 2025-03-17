@@ -297,6 +297,10 @@ export default function Dashboard({
                 setIsSwaping(false);
                 return;
               }
+            } else if (toolMessage?.type === "coinMarketCap") {
+              const aiMessage: Message = { role: "ai", message: toolMessage?.response };
+              setMessages((prev) => [...prev, aiMessage]);
+              return;
             }
           }
         }
