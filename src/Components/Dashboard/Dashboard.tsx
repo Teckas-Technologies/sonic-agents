@@ -232,6 +232,7 @@ export default function Dashboard({
               const bridgeData: BridgeData = {
                 fromChain: toolMessage?.fromChain,
                 amount: toolMessage?.amount,
+                tokenSymbol: toolMessage?.tokenSymbol
               };
 
               if (toolMessage?.recipientAddress) {
@@ -391,12 +392,14 @@ export default function Dashboard({
                       alt={agent}
                       className="h-6 rounded-full"
                     />
-                    <h3 className="font-semibold text-md truncate-1-lines w-[85%]">
+                    <h3 className="font-semibold text-md truncate-1-lines w-[90%]">
                       {agent === "bridgeAgent" ?
                         "Bridge Assistant" :
                         agent === "swapAgent" ?
                           "Swap Assistant" :
-                          "Liquidity Assistant"}
+                          agent === "coinMarketCapAgent" ?
+                            "CoinMarketCap Assistant" :
+                            "Liquidity Assistant"}
                     </h3>
                   </div>
                   <IoMdInformationCircleOutline className="w-5 h-5 text-gray-400 cursor-pointer" />
@@ -406,7 +409,9 @@ export default function Dashboard({
                     "Assistant for helping users to bridge tokens between Solana & Sonic SVM chains." :
                     agent === "swapAgent" ?
                       "Assistant for helping users to swap tokens between Solana & Sonic SVM chains." :
-                      "Assistant for helping users to add liquidity to pool in Solana & Sonic SVM chains."}
+                      agent === "coinMarketCapAgent" ?
+                        "Assistant for helping users to know the current market price of the tokens & all over the crypto activities in the world." :
+                        "Assistant for helping users to add liquidity to pool in Solana & Sonic SVM chains."}
                 </p>
               </div>
             ))}
@@ -417,7 +422,7 @@ export default function Dashboard({
         <div className="flex-1 flex flex-col justify-center w-full md:w-[70%] lg:w-[71%] xl:w-[72%]">
           {/* Execute Transactions with AI Box */}
           <div className="flex-1 flex flex-col items-center justify-center bg-gray-950 border border-gray-700 rounded-lg md:mt-4 md:mx-4 p-[0.1rem] md:p-[0.4rem] lg:p-[0.7rem] xl:p-[1rem]">
-            {messages.length > 0 && <div className="top w-full flex justify-between items-center pr-5 md:pr-0 border-b border-gray-700 pb-3">
+            {messages.length > 0 && <div className="top w-full flex justify-between items-center px-5 md:px-0 border-b border-gray-700 pb-3">
               <h2
                 className="font-semibold text-md"
                 style={{ fontFamily: "orbitron" }}

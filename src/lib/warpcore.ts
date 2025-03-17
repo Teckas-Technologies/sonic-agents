@@ -21,5 +21,14 @@ const chains: ChainMap<ChainMetadata & { mailbox?: Address }> = {
 };
 const multiProvider = new MultiProtocolProvider(chains);
 export const warpCore = WarpCore.FromConfig(multiProvider, {
-    tokens: warpRouteConfigs["SOL/solanamainnet-sonicsvm"].tokens,
+    // tokens: warpRouteConfigs["SOL/solanamainnet-sonicsvm"].tokens,
+    tokens: [
+        ...warpRouteConfigs["SOL/solanamainnet-sonicsvm"].tokens,
+        ...warpRouteConfigs["SONIC/solanamainnet-sonicsvm"].tokens,
+        ...warpRouteConfigs["sonicSOL/solanamainnet-sonicsvm"].tokens,
+        ...warpRouteConfigs["USDT/solanamainnet-sonicsvm"].tokens,
+        ...warpRouteConfigs["USDC/solanamainnet-sonicsvm"].tokens,
+        ...warpRouteConfigs["sSOL/solanamainnet-sonicsvm"].tokens,
+        ...warpRouteConfigs["lrtsSOL/solanamainnet-sonicsvm"].tokens,
+    ],
 });
