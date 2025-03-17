@@ -11,7 +11,11 @@ const chains: ChainMap<ChainMetadata & { mailbox?: Address }> = {
         mailbox: solanamainnetAddresses.mailbox as Address,
     },
     sonicsvm: {
-        ...chainMetadata.sonicsvm,
+        // ...chainMetadata.sonicsvm,
+        ...sonicsvm,
+        rpcUrls: [
+            { http: "https://sonic.helius-rpc.com" }
+        ],
         mailbox: sonicsvmAddresses.mailbox as Address
     },
 };

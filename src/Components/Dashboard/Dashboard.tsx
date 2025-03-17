@@ -93,8 +93,8 @@ export default function Dashboard({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  console.log("Wallets:", wallets[0])
-  console.log("User:", user)
+  // console.log("Wallets:", wallets[0])
+  // console.log("User:", user)
 
   const checkConnection = async () => {
     setIsConnected(await wallets[0].isConnected())
@@ -209,11 +209,6 @@ export default function Dashboard({
     setMessages((prev) => [...prev, userMessage]);
     setMessage(""); // Clear the input field
 
-    if (wallets[0]?.walletClientType === "phantom") {
-      setMessages((prev) => [...prev, { role: "ai", message: "Please connect your wallet using one of the following: Backpack, OKX Web3 Wallet, Nightly Wallet, or Bybit Wallet." }]);
-      return;
-    }
-
     setIsLoading(true);
 
     try {
@@ -226,6 +221,14 @@ export default function Dashboard({
 
           if (toolMessage?.success) {
             if (toolMessage?.type === "bridge") {
+
+              if (toolMessage?.fromChain !== "solanamainnet") {
+                if (wallets[0]?.walletClientType === "phantom") {
+                  setMessages((prev) => [...prev, { role: "ai", message: "Please connect your sonic svm wallet using one of the following: Backpack, OKX Web3 Wallet, Nightly Wallet, or Bybit Wallet." }]);
+                  return;
+                }
+              }
+
               const bridgeData: BridgeData = {
                 fromChain: toolMessage?.fromChain,
                 amount: toolMessage?.amount,
@@ -414,18 +417,26 @@ export default function Dashboard({
         <div className="flex-1 flex flex-col justify-center w-full md:w-[70%] lg:w-[71%] xl:w-[72%]">
           {/* Execute Transactions with AI Box */}
           <div className="flex-1 flex flex-col items-center justify-center bg-gray-950 border border-gray-700 rounded-lg md:mt-4 md:mx-4 p-[0.1rem] md:p-[0.4rem] lg:p-[0.7rem] xl:p-[1rem]">
-            {messages.length > 0 && <div className="top w-full flex justify-end items-center gap-2 pr-5 md:pr-0">
+            {messages.length > 0 && <div className="top w-full flex justify-between items-center pr-5 md:pr-0 border-b border-gray-700 pb-3">
               <h2
-                className="text-sm font-thin"
+                className="font-semibold text-md"
                 style={{ fontFamily: "orbitron" }}
               >
-                Clear History
+                SONIC SVM AGENTS
               </h2>
-              <div className="clear-chat w-[1.5rem] h-[1.5rem] flex items-center justify-center cursor-pointer" onClick={clearChatHistory}>
-                <InlineSVG
-                  src="/icons/clear.svg"
-                  className="fill-current bg-transparent text-gray-700 bg-white rounded-md w-[1.5rem] h-[1.5rem]"
-                />
+              <div className="div flex justify-end items-center gap-2">
+                <h2
+                  className="text-sm font-thin"
+                  style={{ fontFamily: "orbitron" }}
+                >
+                  Clear History
+                </h2>
+                <div className="clear-chat w-[1.5rem] h-[1.5rem] flex items-center justify-center cursor-pointer" onClick={clearChatHistory}>
+                  <InlineSVG
+                    src="/icons/clear.svg"
+                    className="fill-current bg-transparent text-gray-700 bg-white rounded-md w-[1.5rem] h-[1.5rem]"
+                  />
+                </div>
               </div>
             </div>}
             {messages.length === 0 && <div className="text-center">

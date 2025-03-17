@@ -70,8 +70,8 @@ const Agents = ({
   onMobileNavToggle: () => void;
   isMobileNavVisible: boolean;
 }) => {
-  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(true);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(["DeFi"]);
   const [agents, setAgents] = useState([]);
   const router = useRouter();
   const { fetchAgents } = useChat();
@@ -194,12 +194,12 @@ const Agents = ({
 
           {/* Agents Grid - Scrollable */}
           <div className="grid md:grid-cols-2 grid-cols-1 gap-6 mb-[100px]">
-            {agents.length > 0 && agents?.map((agent, index) => (
+            {selectedCategories.includes("DeFi") && agents.length > 0 && agents?.map((agent, index) => (
               <div key={index} className="common cursor-pointer">
                 <div
                   className="p-6 bg-gray-950 border-t border-l border-r border-gray-700 rounded-lg 
-            hover:border-b hover:border-gray-500 
-            transition-all duration-300 ease-in-out"
+                hover:border-b hover:border-gray-500 
+                transition-all duration-300 ease-in-out"
                 >
                   {/* Logo, Title, and Button in the Same Line */}
                   <div className="flex items-center justify-between mb-4">
@@ -225,7 +225,7 @@ const Agents = ({
                     <button
                       className="py-2 px-3 bg-gray-700 hover:bg-gray-600 cursor-pointer rounded text-sm"
                       style={{ fontFamily: "manrope" }}
-                      onClick={()=> router.push(`/?agent=${agent}`)}
+                      onClick={() => router.push(`/?agent=${agent}`)}
                     >
                       Run Agent
                     </button>
@@ -255,7 +255,7 @@ const Agents = ({
                     >
                       <span className="text-gray-500 text-sm">By</span>
                       <img
-                        src="https://pbs.twimg.com/profile_images/1804597854725431296/fLn9-v6H_400x400.jpg"
+                        src="/images/teckas.png"
                         alt="Author Logo"
                         className="w-5 h-5 rounded-full"
                       />
@@ -282,6 +282,16 @@ const Agents = ({
               </div>
             ))}
           </div>
+          {!selectedCategories.includes("DeFi") && selectedCategories.length !== 0 && <div className="w-full flex flex-col items-center justify-center gap-3">
+            <p className="" style={{ fontFamily: "orbitron" }}>Agents will coming soon!</p>
+            <div className="soon px-2 py-1 bg-[#fbb042] rounded text-black md:text-sm text-[8px] font-semibold"
+              style={{ fontFamily: "orbitron" }}>
+              SOON
+            </div>
+          </div>}
+          {selectedCategories.length === 0 && <div className="w-full flex flex-col items-center justify-center gap-3">
+            <p className="" style={{ fontFamily: "orbitron" }}>No agents found!</p>
+          </div>}
         </div>
       </div>
     </div>

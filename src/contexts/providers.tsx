@@ -19,10 +19,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           loginMessage: "Use agents on top of Sonic SVM",
           theme: 'dark',
           accentColor: '#676FFF',
-          logo: 'https://your-logo-url',
+          logo: 'images/sonic-logo.png',
           walletChainType: 'solana-only',
+          walletList: ['bybit_wallet', 'backpack', 'phantom', 'okx_wallet',], 
         },
-        // supportedChains: [mainnetOverride],
         externalWallets: {
           solana: {
             connectors: solanaConnectors,

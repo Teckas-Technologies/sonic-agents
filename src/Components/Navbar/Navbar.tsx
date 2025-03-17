@@ -8,6 +8,7 @@ import { MdLink } from "react-icons/md";
 import { HiMiniArrowUpRight } from "react-icons/hi2";
 import { usePrivy, useSolanaWallets } from "@privy-io/react-auth";
 import { useBridgeToken } from "@/hooks/useBridge";
+import InlineSVG from "react-inlinesvg";
 
 export default function Navbar({
   isCollapsed,
@@ -22,6 +23,7 @@ export default function Navbar({
   const pathname = usePathname();
   const { connectWallet, user, ready } = usePrivy();
   const [isConnected, setIsConnected] = useState(false);
+  const [isSoon, setIsSoon] = useState(false);
 
   const { wallets } = useSolanaWallets();
 
@@ -52,6 +54,13 @@ export default function Navbar({
       checkLinked()
     }
   }, [wallets.length])
+
+  const handleConnect = () => {
+    connectWallet({
+      suggestedAddress: '1111WS4xG97qPg6xehU4MadJZifPyQPgYPHfsS3X1111',
+      walletList: ['phantom', 'solflare'],
+    });
+  }
 
   const handleDisconnect = async () => {
     if (wallets.length === 0) {
@@ -144,20 +153,32 @@ export default function Navbar({
             <hr className="mt-5 h-3"></hr>
             {(!isCollapsed || isMobileNavVisible) && (
               <div className="mt-4 space-y-4">
-                <Link
-                  href="#"
-                  className="block text-gray-400 text-lg flex flex-row items-center gap-1 font-semibold hover:bg-gray-800 px-3 py-2 rounded-lg"
-                  style={{ fontFamily: "manrope" }}
-                >
-                  Build Agent <HiMiniArrowUpRight />
-                </Link>
-                <Link
-                  href="#"
-                  className="block flex flex-row items-center gap-1 text-gray-400 text-lg font-semibold hover:bg-gray-800 px-3 py-2 rounded-lg"
-                  style={{ fontFamily: "manrope" }}
-                >
-                  Documentation <HiMiniArrowUpRight />
-                </Link>
+                <div onClick={isMobileNavVisible ? () => { onMobileNavToggle(); setIsSoon(true) } : () => setIsSoon(true)} className="build-agent block flex items-center justify-between text-gray-400 text-lg font-semibold hover:bg-gray-800 px-2 py-2 rounded-lg">
+                  <Link
+                    href="#"
+                    className="flex flex-row items-center gap-1"
+                    style={{ fontFamily: "manrope" }}
+                  >
+                    Build Agent <HiMiniArrowUpRight />
+                  </Link>
+                  {/* <div className="soon px-2 py-1 bg-[#fbb042] rounded text-black md:text-sm text-[8px] font-semibold"
+                    style={{ fontFamily: "orbitron" }}>
+                    SOON
+                  </div> */}
+                </div>
+                <div onClick={isMobileNavVisible ? () => { onMobileNavToggle(); setIsSoon(true) } : () => setIsSoon(true)} className="build-agent block flex items-center justify-between gap-1 text-gray-400 text-lg font-semibold hover:bg-gray-800 px-2 py-2 rounded-lg">
+                  <Link
+                    href="#"
+                    className="flex flex-row items-center"
+                    style={{ fontFamily: "manrope" }}
+                  >
+                    Documentation <HiMiniArrowUpRight />
+                  </Link>
+                  {/* <div className="soon px-2 py-1 bg-[#fbb042] rounded text-black md:text-sm text-[8px] font-semibold"
+                    style={{ fontFamily: "orbitron" }}>
+                    SOON
+                  </div> */}
+                </div>
               </div>
             )}
           </div>
@@ -177,6 +198,38 @@ export default function Navbar({
           </div>
         </div>
       </nav>
+
+      {isSoon && <div onClick={() => setIsSoon(false)} className={`absolute top-0 bottom-0 right-0 left-0 bg-transparent backdrop-blur-[10px] z-10 flex justify-center items-center ${isCollapsed && !isMobileNavVisible ? "" : " md:pl-[15rem] lg:pl-[16rem]"}`}>
+        <div className="center-box w-[22rem] md:w-[24rem] lg:w-[25rem] xl:w-[26rem] min-h-[12rem] md:min-h-[15rem] bg-gray-800 rounded-md">
+          <div className="top-close h-[2rem] w-full flex justify-end items-center pr-5 pt-5">
+            <div className="clear-chat w-[1.5rem] h-[1.5rem] flex items-center justify-center cursor-pointer" onClick={() => setIsSoon(false)}>
+              <InlineSVG
+                src="/icons/clear.svg"
+                className="fill-current bg-transparent text-gray-700 bg-white rounded-md w-[1.5rem] h-[1.5rem]"
+              />
+            </div>
+          </div>
+          <div onClick={(e) => e.stopPropagation()} className="inside-box w-full pb-5 md:pb-[1.5rem] md:min-h-[15rem] min-[13rem] flex flex-col items-center justify-center gap-1">
+            <div className="flex justify-center items-center">
+              <img
+                src="images/sonic-logo.png"
+                className="md:h-[100px] h-[50px]"
+              />
+            </div>
+            <h2
+              className="xxl:text-xl text-white xl:text-lg font-semibold text-md"
+              style={{ fontFamily: "orbitron" }}
+            >
+              SONIC SVM AGENTS
+            </h2>
+            <p className="text-md text-white">Build your own agents!</p>
+            <div className="soon max-w-[10rem] mt-2 text-center px-3 py-1 bg-[#fbb042] rounded text-black md:text-sm text-[8px] font-semibold"
+              style={{ fontFamily: "orbitron" }}>
+              COMING SOON
+            </div>
+          </div>
+        </div>
+      </div>}
     </>
   );
 }

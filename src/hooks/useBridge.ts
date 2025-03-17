@@ -36,9 +36,10 @@ export const useBridgeToken = () => {
         const parsedAmt = parseFloat(data.amount) * 10 ** 9; // 0.02 * 10 ** 9
         const originTokenAmount = originToken.amount(parsedAmt.toString());
 
-        // console.log("Recipient:", recipient)
-        // console.log("Origin Token:", originToken)
-        // console.log("Amount:", originTokenAmount)
+        console.log("Recipient:", recipient)
+        console.log("Origin Token:", originToken)
+        console.log("Amount:", originTokenAmount)
+        console.log("Desination:", destination)
 
         setLoading(true);
         setError(null);
