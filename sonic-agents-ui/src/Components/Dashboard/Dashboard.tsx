@@ -302,6 +302,9 @@ export default function Dashboard({
               setMessages((prev) => [...prev, aiMessage]);
               return;
             }
+          } else {
+            setMessages((prev) => [...prev, { role: "ai", message: "Something went wrong, Try again later!" }]);
+            return;
           }
         }
 
